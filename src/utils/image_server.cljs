@@ -1,5 +1,6 @@
 (ns utils.image-server
-  (:require [utils.datetime :as datetime]))
+  (:require [utils.datetime :as datetime]
+            utils.schema))
 
 (def ^:const image-server-uri-prefix "https://localhost:")
 (def ^:const account-images-action "/accountImages")
@@ -16,6 +17,9 @@
     :light 1
     :dark  2))
 
+(utils.schema/=> current-theme-index
+  [:=> [:cat :schema.common/theme] :int])
+
 (defn correction-level->index
   [level]
   (case (keyword level)
@@ -24,6 +28,11 @@
     :quart   3
     :highest 4
     4))
+
+(utils.schema/=> correction-level->index
+  [:=>
+   [:cat [:or :keyword :string]]
+   :int])
 
 (defn get-account-image-uri
   [{:keys [port public-key image-name key-uid theme ring?]}]
@@ -42,6 +51,18 @@
        (timestamp)
        "&addRing="
        (if ring? 1 0)))
+
+(utils.schema/=> get-account-image-uri
+  [:=>
+   [:cat
+    [:map
+     [:port :string]
+     [:public-key :string]
+     [:key-uid :string]
+     [:image-name :string]
+     [:theme :schema.common/theme]
+     [:ring? :boolean]]]
+   :string])
 
 (defn get-contact-image-uri
   [port public-key image-name clock theme]

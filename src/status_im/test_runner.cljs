@@ -4,8 +4,9 @@
             [clojure.string :as string]
             [shadow.test :as st]
             [shadow.test.env :as env]
-            [utils.re-frame :as rf]
-            status-im2.setup.i18n-resources))
+            status-im2.setup.i18n-resources
+            [status-im2.setup.schema :as schema]
+            [utils.re-frame :as rf]))
 
 (defonce repl? (atom false))
 
@@ -72,8 +73,8 @@
   [{:keys [test-syms help list repl] :as _opts}]
   (let [test-env
         (-> (ct/empty-env)
-            ;; can't think of a proper way to let CLI specify custom reporter?
-            ;; :report-fn is mostly for UI purposes, CLI should be fine with default report
+            ;; can't think of a proper way to let CLI specify custom reporter? :report-fn is mostly
+            ;; for UI purposes, CLI should be fine with default report
             #_(assoc :report-fn
                      (fn [m]
                        (tap> [:test m (ct/get-current-env)])
@@ -113,6 +114,7 @@
 (defn ^:export main
   [& args]
   (reset-test-data!)
+  (schema/setup!)
   (rf/set-mergeable-keys #{:filters/load-filters
                            :pairing/set-installation-metadata
                            :dispatch-n

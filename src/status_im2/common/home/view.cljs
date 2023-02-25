@@ -8,7 +8,8 @@
     [status-im2.common.plus-button.view :as plus-button]
     [status-im2.constants :as constants]
     [utils.debounce :refer [dispatch-and-chill]]
-    [utils.re-frame :as rf]))
+    [utils.re-frame :as rf]
+    utils.schema))
 
 (defn title-column
   [{:keys [label handler accessibility-label customization-color]}]
@@ -145,3 +146,12 @@
        :image               image
        :title               title
        :description         description}]]))
+
+(utils.schema/=> top-nav
+  [:=>
+   [:cat
+    [:map
+     [:type {:optional true} [:enum :grey :shell]]
+     [:style {:optional true} :schema.common/style]
+     [:search? {:optional true} :boolean]]]
+   :any])

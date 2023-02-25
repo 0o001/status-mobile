@@ -44,7 +44,7 @@
          (if (not @complete?)
            [quo/slide-button
             {:track-text          "We gotta slide"
-             :track-icon          :face-id
+             :track-icon          :i/face-id
              :customization-color @color
              :size                @size
              :disabled?           @disabled?
