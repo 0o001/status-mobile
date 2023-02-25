@@ -11,6 +11,7 @@
                 [com.cognitect/transit-cljs "0.8.248"]
                 [mvxcvi/alphabase "1.0.0"]
                 [camel-snake-kebab "0.4.3"]
+                [metosin/malli "0.11.0"]
                 ;; Dev dependencies
                 [refactor-nrepl "2.5.0"]
                 [cider/cider-nrepl "0.25.3"]

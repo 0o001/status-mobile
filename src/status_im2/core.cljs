@@ -20,6 +20,7 @@
     [status-im.notifications.local :as notifications]
     [status-im.utils.universal-links.core :as utils.universal-links]
     status-im.events
+    status-im2.setup.schema
     status-im2.events
     status-im2.navigation.core
     status-im2.subs.root))

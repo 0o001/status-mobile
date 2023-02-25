@@ -1,5 +1,6 @@
 (ns status-im2.setup.hot-reload
   (:require [re-frame.core :as re-frame]
+            [status-im2.setup.schema :as schema]
             [react-native.core :as rn]
             [reagent.core :as reagent]))
 
@@ -18,6 +19,7 @@
   (reset! visible true)
   (reset! label "reloading UI")
   (re-frame/clear-subscription-cache!)
+  (schema/setup!)
   (swap! cnt inc))
 
 (defn before-reload

@@ -120,6 +120,14 @@
    :style   override-style
    :search? When non-nil, show search button}
   "
+  {:malli/schema
+   [:=>
+    [:cat
+     [:map
+      [:type {:optional true} :keyword]
+      [:style {:optional true} :s/style]
+      [:search? {:optional true} :boolean]]]
+    :any]}
   [{:keys [type style search? background]
     :or   {type :default}}]
   (let [account             (rf/sub [:profile/multiaccount])

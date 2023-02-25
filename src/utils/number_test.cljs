@@ -1,6 +1,7 @@
 (ns utils.number-test
   (:require [cljs.test :refer [deftest is testing]]
-            [utils.number]))
+            [test-helpers.unit :as h]
+            utils.number))
 
 (deftest parse-int
   (testing "defaults to zero"
@@ -15,3 +16,23 @@
     (is (= 6 (utils.number/parse-int "6" 0)))
     (is (= 6 (utils.number/parse-int "6.99" 0)))
     (is (= -6 (utils.number/parse-int "-6" 0)))))
+
+(def ?address
+  [:map
+   [:id :string]
+   [:tags [:set :keyword]]
+   [:address
+    [:map
+     [:street :string]
+     [:city :string]
+     [:zip :int]
+     [:lonlat [:tuple :double :double]]]]])
+
+(deftest super-complicated-data-structure
+  (is (h/match ?address
+        {:id      "0x1"
+         :tags    #{}
+         :address {:street "street"
+                   :city   "poa"
+                   :zip    9999
+                   :lonlat ["1" 10.2]}})))

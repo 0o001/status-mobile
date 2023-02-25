@@ -6,7 +6,11 @@
   prefer to use it for more general purpose concepts, such as the re-frame event
   layer."
   (:require-macros test-helpers.unit)
-  (:require [re-frame.core :as rf]
+  (:require [malli.core :as malli]
+            malli.dev.pretty
+            malli.dev.virhe
+            malli.error
+            [re-frame.core :as rf]
             [re-frame.db :as rf-db]
             [re-frame.events :as rf-events]
             [re-frame.registrar :as rf-registrar]
@@ -136,3 +140,35 @@
 (defn- log-fixture-after
   []
   (log/set-config! @original-log-config))
+
+(defn explain
+  [?schema value]
+  (let [explainer  (fn []
+                     (->> (malli/explain ?schema value)
+                          (malli.error/with-error-messages)))
+        prettifier (malli.dev.pretty/prettifier :status/malli-explain
+                                                "Validation Error"
+                                                explainer
+                                                {})]
+    (prettifier)))
+
+(defn match
+  [?schema value]
+  (let [valid? (malli/validate ?schema value)]
+    (when-not valid?
+      (explain ?schema value))
+    valid?))
+
+(defmethod malli.dev.virhe/-format :status/malli-explain
+  [_ _ explanation printer]
+  {:body
+   [:group
+    (malli.dev.pretty/-block "Value:"
+                             (malli.dev.virhe/-visit (malli.error/error-value explanation printer)
+                                                     printer)
+                             printer)
+    :break
+    :break
+    (malli.dev.pretty/-block "Errors:"
+                             (malli.dev.virhe/-visit (malli.error/humanize explanation) printer)
+                             printer)]})
