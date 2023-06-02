@@ -260,7 +260,7 @@
                                     "&allowProfileImage="
                                     superimpose-profile?
                                     "&size="
-                                    qr-size
+                                    (* 2 qr-size)
                                     "&imageName="
                                     profile-image-type)]
     media-server-url))

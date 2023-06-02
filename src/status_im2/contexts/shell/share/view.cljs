@@ -16,15 +16,24 @@
 (defn header
   []
   [:<>
-   [quo/button
-    {:icon-only?          true
-     :type                :grey
-     :background          :blur
-     :size                32
-     :accessibility-label :close-shell-share-tab
-     :container-style     style/header-button
-     :on-press            #(rf/dispatch [:navigate-back])}
-    :i/close]
+   [rn/view {:style style/header-row}
+    [quo/button
+     {icon-only?           true
+      :type                :grey
+      :background          :blur
+      :size                32
+      :accessibility-label :close-shell-share-tab
+      :container-style     style/header-button
+      :on-press            #(rf/dispatch [:navigate-back])}
+     :i/close]
+    [quo/button
+     {:icon                true
+      :type                :blur-bg
+      :size                32
+      :accessibility-label :shell-scan-button
+      :override-theme      :dark
+      :on-press            #(rf/dispatch [:navigate-back])}
+     :i/scan]]
    [quo/text
     {:size   :heading-1
      :weight :semi-bold
@@ -154,5 +163,8 @@
       [rn/view
        {:flex        1
         :padding-top (navigation/status-bar-height)}
-       [blur/view style/blur]
+       [blur/view
+        {:style            style/blur
+         :background-color colors/neutral-80-opa-80-blur
+         :blur-amount      20}]
        [tab-content window-width]])))
