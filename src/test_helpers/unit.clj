@@ -87,34 +87,3 @@
   `(day8.re-frame.test/run-test-sync
     (with-redefs [utils.re-frame/dispatch re-frame.core/dispatch]
       ~@body)))
-
-;; TODO: https://github.com/gphilipp/react-native-with-clojurescript
-;; See the section about using spec to test all functions (render them).
-#_(defmethod cljs-test/assert-expr 'match
-    ;; Match `value` against `?schema`.
-    ;;
-    ;; Usage:
-    ;;   (deftest validate-string-test
-    ;;     (is (h/match [:string] 10)))
-    ;;
-    ;;   => FAIL
-    ;;      expected: "should be a string" actual: 10
-    [_env msg [_ ?schema value]]
-    `(let [value#    ~value
-           msg#      ~msg
-           ?schema#  ~?schema
-           valid?#   (malli.core/validate ?schema# value#)
-           expected# (-> ?schema#
-                         (malli.core/explain value#)
-                         (malli.error/humanize))
-           message#  (when-not valid?#
-                       (clojure.string/trimr
-                        (str (if msg#
-                               (str msg# "\n"))
-                             (with-out-str
-                               (test-helpers.unit/explain ?schema# value#)))))]
-       (cljs-test/do-report
-        {:actual   value#
-         :expected expected#
-         :message  message#
-         :type     (if valid?# :pass :fail)})))

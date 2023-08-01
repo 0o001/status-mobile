@@ -2,13 +2,13 @@
   (:require [cljs.test :refer [is testing]]
             [malli.core :as malli]
             malli.generator
-            malli.util
             [re-frame.db :as rf-db]
             [status-im2.contexts.shell.activity-center.notification-types :as types]
             status-im2.subs.activity-center
             [test-helpers.unit :as h]
             utils.collection
-            [utils.re-frame :as rf]))
+            [utils.re-frame :as rf]
+            utils.schema))
 
 (h/deftest-sub :activity-center/filter-status-unread-enabled?
   [sub-name]
@@ -68,30 +68,16 @@
 
   (is (= 28 (rf/sub [sub-name]))))
 
-(defn explain-schema!
-  [?schema value]
-  (if (malli/validate ?schema value)
-    value
-    (do (h/explain ?schema value)
-        (throw (js/Error. "Invalid schema")))))
-
 (defn generate-contact-request
-  ([]
-   (generate-contact-request {}))
-  ([m]
-   (explain-schema!
-    :s/notification
-    (-> (malli.generator/generate :s/notification)
-        (assoc :type types/contact-request)
-        (assoc :contact-verification-status nil)
-        (assoc-in [:message :contact-request-state]
-                  (malli.generator/generate
-                   (malli.util/get-in (malli/deref :s/notification)
-                                      [:message :contact-request-state])))
-        (utils.collection/deep-merge m)))))
+  [m]
+  (let [notification (-> (malli.generator/generate :s/notification)
+                         (assoc :type types/contact-request)
+                         (assoc :contact-verification-status nil)
+                         (utils.collection/deep-merge m))]
+    (utils.schema/match :s/notification notification)))
 
 (comment
-  (generate-contact-request)
+  (generate-contact-request {})
   (malli.generator/generate :s/notification)
   (malli.generator/sample :s/notification {:size 20}))
 

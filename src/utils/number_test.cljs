@@ -1,6 +1,6 @@
 (ns utils.number-test
   (:require [cljs.test :refer [deftest is testing]]
-            [test-helpers.unit :as h]
+            utils.schema
             utils.number))
 
 (deftest parse-int
@@ -29,7 +29,7 @@
      [:lonlat [:tuple :double :double]]]]])
 
 (deftest super-complicated-data-structure
-  (is (h/match ?address
+  (is (utils.schema/match ?address
         {:id      "0x1"
          :tags    #{}
          :address {:street "street"
