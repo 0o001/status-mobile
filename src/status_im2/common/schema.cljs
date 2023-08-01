@@ -9,8 +9,12 @@
 (def ^:private ?style
   [:map-of :keyword [:or :int :string :keyword]])
 
+(def ^:private ?theme
+  [:enum :light :dark])
+
 (defn schemas
   []
-  {:s/unix-timestamp ?unix-timestamp
+  {:s/public-key     ?public-key
    :s/style          ?style
-   :s/public-key     ?public-key})
+   :s/theme          ?theme
+   :s/unix-timestamp ?unix-timestamp})

@@ -26,6 +26,17 @@
     4))
 
 (defn get-account-image-uri
+  {:malli/schema
+   [:=>
+    [:cat
+     [:map
+      [:port :string]
+      [:public-key :string]
+      [:key-uid :string]
+      [:image-name :string]
+      [:theme :s/theme]
+      [:ring? :boolean]]]
+    :string]}
   [{:keys [port public-key image-name key-uid theme ring?]}]
   (str image-server-uri-prefix
        port
