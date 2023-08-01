@@ -52,10 +52,10 @@
   up only the REPL for the shadow-cljs :test target, so you will need to
   manually call `setup!` once after defining an instrumented var."
   []
+  (malli.registry/set-default-registry! (registry))
+
   ;; We need to use `malli.dev.pretty/thrower` instead of `malli.dev.pretty/report`, otherwise calls
   ;; to memoized functions won't fail on subsequent calls after the first failure.
   ;;
   ;; TODO(ilmotta): Make sure this line only runs in dev/test environments.
-  (malli.dev/start! {:report (malli.dev.pretty/thrower (printer))})
-
-  (malli.registry/set-default-registry! (registry)))
+  (malli.dev/start! {:report (malli.dev.pretty/thrower (printer))}))
