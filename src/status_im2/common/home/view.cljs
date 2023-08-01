@@ -1,5 +1,6 @@
 (ns status-im2.common.home.view
   (:require
+    [malli.core :as malli]
     [quo2.core :as quo]
     [quo2.foundations.colors :as colors]
     [react-native.core :as rn]
@@ -153,3 +154,12 @@
        :image               image
        :title               title
        :description         description}]]))
+
+(malli/=> top-nav
+          [:=>
+           [:cat
+            [:map
+             [:type {:optional true} :keyword]
+             [:style {:optional true} :s/style]
+             [:search? {:optional true} :boolean]]]
+           :any])

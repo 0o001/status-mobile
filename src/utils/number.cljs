@@ -13,11 +13,13 @@
   changes.
 
   Don't use this function for arbitrary-precision arithmetic."
-  {:malli/schema [:=> [:cat :int :int] :int]}
   [n decimal-places]
   (let [scale (Math/pow 10 decimal-places)]
     (/ (Math/round (* n scale))
        scale)))
+
+(malli/=> naive-round
+          [:=> [:cat :int :int] :int])
 
 (defn parse-int
   "Parses `n` as an integer. Defaults to zero or `default` instead of NaN."

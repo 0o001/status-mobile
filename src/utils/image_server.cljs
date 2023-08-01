@@ -1,5 +1,6 @@
 (ns utils.image-server
-  (:require [utils.datetime :as datetime]))
+  (:require [malli.core :as malli]
+            [utils.datetime :as datetime]))
 
 (def ^:const image-server-uri-prefix "https://localhost:")
 (def ^:const account-images-action "/accountImages")
@@ -16,6 +17,9 @@
     :light 1
     :dark  2))
 
+(malli/=> current-theme-index
+          [:=> [:cat :s/theme] :int])
+
 (defn correction-level->index
   [level]
   (case (keyword level)
@@ -25,18 +29,12 @@
     :highest 4
     4))
 
+(malli/=> correction-level->index
+          [:=>
+           [:cat [:or :keyword :string]]
+           :int])
+
 (defn get-account-image-uri
-  {:malli/schema
-   [:=>
-    [:cat
-     [:map
-      [:port :string]
-      [:public-key :string]
-      [:key-uid :string]
-      [:image-name :string]
-      [:theme :s/theme]
-      [:ring? :boolean]]]
-    :string]}
   [{:keys [port public-key image-name key-uid theme ring?]}]
   (str image-server-uri-prefix
        port
@@ -53,6 +51,18 @@
        (timestamp)
        "&addRing="
        (if ring? 1 0)))
+
+(malli/=> get-account-image-uri
+          [:=>
+           [:cat
+            [:map
+             [:port :string]
+             [:public-key :string]
+             [:key-uid :string]
+             [:image-name :string]
+             [:theme :s/theme]
+             [:ring? :boolean]]]
+           :string])
 
 (defn get-contact-image-uri
   [port public-key image-name clock theme]

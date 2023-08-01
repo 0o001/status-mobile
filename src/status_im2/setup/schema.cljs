@@ -4,10 +4,12 @@
             malli.dev.pretty
             malli.dev.virhe
             malli.error
+            malli.instrument
             malli.registry
             malli.util
             [status-im2.common.schema :as common.schema]
-            [status-im2.contexts.shell.schema :as shell.schema]))
+            [status-im2.contexts.shell.schema :as shell.schema]
+            [taoensso.timbre :as log]))
 
 (defn- printer
   []
@@ -50,12 +52,16 @@
   When instrumented vars are defined and hot reload hasn't been triggered, they
   won't be magically detected and instrumented. Such is the case when you bring
   up only the REPL for the shadow-cljs :test target, so you will need to
-  manually call `setup!` once after defining an instrumented var."
+  manually call `setup!` once after defining a new instrumented var."
   []
   (malli.registry/set-default-registry! (registry))
 
+  ;; In theory not necessary, but sometimes in a REPL session the dev needs to
+  ;; call unstrument! manually.
+  (malli.instrument/unstrument!)
+
   ;; We need to use `malli.dev.pretty/thrower` instead of `malli.dev.pretty/report`, otherwise calls
   ;; to memoized functions won't fail on subsequent calls after the first failure.
-  ;;
-  ;; TODO(ilmotta): Make sure this line only runs in dev/test environments.
-  (malli.dev/start! {:report (malli.dev.pretty/thrower (printer))}))
+  (malli.dev/start! {:report (malli.dev.pretty/thrower (printer))})
+
+  (log/info "Schemas successfully initialized."))
