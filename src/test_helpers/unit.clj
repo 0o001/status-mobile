@@ -1,6 +1,5 @@
 (ns test-helpers.unit
-  (:require [cljs.test :as cljs-test]
-            [clojure.spec.alpha :as s]
+  (:require [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [clojure.walk :as walk]))
 
