@@ -18,7 +18,7 @@
     :dark  2))
 
 (malli/=> current-theme-index
-          [:=> [:cat :s/theme] :int])
+  [:=> [:cat :s/theme] :int])
 
 (defn correction-level->index
   [level]
@@ -30,9 +30,9 @@
     4))
 
 (malli/=> correction-level->index
-          [:=>
-           [:cat [:or :keyword :string]]
-           :int])
+  [:=>
+   [:cat [:or :keyword :string]]
+   :int])
 
 (defn get-account-image-uri
   [{:keys [port public-key image-name key-uid theme ring?]}]
@@ -53,16 +53,16 @@
        (if ring? 1 0)))
 
 (malli/=> get-account-image-uri
-          [:=>
-           [:cat
-            [:map
-             [:port :string]
-             [:public-key :string]
-             [:key-uid :string]
-             [:image-name :string]
-             [:theme :s/theme]
-             [:ring? :boolean]]]
-           :string])
+  [:=>
+   [:cat
+    [:map
+     [:port :string]
+     [:public-key :string]
+     [:key-uid :string]
+     [:image-name :string]
+     [:theme :s/theme]
+     [:ring? :boolean]]]
+   :string])
 
 (defn get-contact-image-uri
   [port public-key image-name clock theme]

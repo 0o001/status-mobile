@@ -1,5 +1,6 @@
 (ns quo2.components.buttons.slide-button.view
   (:require
+    [malli.core :as malli]
     [quo2.components.icon :as icon]
     [quo2.foundations.colors :as colors]
     [quo2.components.buttons.slide-button.style :as style]
@@ -75,15 +76,17 @@
               :size  20}]]]]]))))
 
 (defn view
-  "Options
-  - `on-complete`         Callback called when the sliding is complete
-  - `disabled?`           Boolean that disables the button
-                          (_and gestures_)
-  - `size`                `:small`/`:large`
-  - `track-text`          Text that is shown on the track
-  - `track-icon`          Key of the icon shown on the track
-                          (e.g. `:face-id`)
-  - `customization-color` Customization color
-  "
   [props]
   [:f> f-slider props])
+
+(malli/=> view
+  [:=>
+   [:cat
+    [:map {:closed true}
+     [:on-complete {:optional true} fn?]
+     [:disabled? {:optional true} :boolean]
+     [:size {:optional true} [:enum :small :large]]
+     [:track-text :string]
+     [:track-icon :s/icon-name]
+     [:customization-color {:optional true} :s/color]]]
+   :any])

@@ -156,10 +156,10 @@
        :description         description}]]))
 
 (malli/=> top-nav
-          [:=>
-           [:cat
-            [:map
-             [:type {:optional true} :keyword]
-             [:style {:optional true} :s/style]
-             [:search? {:optional true} :boolean]]]
-           :any])
+  [:=>
+   [:cat
+    [:map
+     [:type {:optional true} [:enum :grey :shell]]
+     [:style {:optional true} :s/style]
+     [:search? {:optional true} :boolean]]]
+   :any])
