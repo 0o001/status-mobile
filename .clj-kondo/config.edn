@@ -14,8 +14,8 @@
                                               clojure.string   string
                                               clojure.walk     walk
                                               malli.core       malli
-                                              malli.dev.pretty malli.dev.pretty
-                                              malli.dev.virhe  malli.dev.virhe
+                                              malli.dev.pretty malli.pretty
+                                              malli.dev.virhe  malli.virhe
                                               malli.error      malli.error
                                               malli.generator  malli.generator
                                               malli.transform  malli.transform

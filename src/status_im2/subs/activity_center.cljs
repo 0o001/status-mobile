@@ -1,10 +1,10 @@
 (ns status-im2.subs.activity-center
-  (:require [re-frame.core :as re-frame]
-            [status-im2.constants :as constants]
-            [status-im2.contexts.shell.activity-center.notification-types :as types]
+  (:require [malli.core :as malli]
+            [malli.dev.pretty :as malli.pretty]
             malli.generator
-            malli.dev.pretty
-            [malli.core :as malli]))
+            [re-frame.core :as re-frame]
+            [status-im2.constants :as constants]
+            [status-im2.contexts.shell.activity-center.notification-types :as types]))
 
 (re-frame/reg-sub
  :activity-center/notifications
@@ -88,7 +88,7 @@
   (def test-instrumentation
     (malli/-instrument
      {:schema [:=> [:cat :s/notification] :s/notification]
-      :report (malli.dev.pretty/reporter)}
+      :report (malli.pretty/reporter)}
      (fn [notification]
        (:id notification))))
 
@@ -113,7 +113,7 @@
    (malli/-instrument
     {:schema [:=> [:cat ?activity-center-notifications :any]
               [:sequential :s/notification]]
-     :report (malli.dev.pretty/reporter)}
+     :report (malli.pretty/reporter)}
     (fn [notifications]
       (filter (fn [{:keys [message]}]
                 (= constants/contact-request-message-state-pending

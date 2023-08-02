@@ -1,8 +1,8 @@
 (ns status-im2.setup.schema
   (:require [malli.core :as malli]
             [malli.dev.cljs :as malli.dev]
-            malli.dev.pretty
-            malli.dev.virhe
+            [malli.dev.pretty :as malli.pretty]
+            [malli.dev.virhe :as malli.virhe]
             malli.error
             malli.instrument
             malli.registry
@@ -11,10 +11,56 @@
             [status-im2.contexts.shell.schema :as shell.schema]
             [taoensso.timbre :as log]))
 
+;;;; Formatters
+;; These formatters replace the original ones provided by Malli. They are more
+;; compact (less line breaks) and don't show the "More Information" section.
+
+(defn block
+  "Same as `malli.dev.pretty/-block`, but adds only one line break between `text`
+  and `body`."
+  [text body printer]
+  [:group (malli.virhe/-text text printer) :break [:align 2 body]])
+
+(defmethod malli.virhe/-format ::malli/explain
+  [_ _ {:keys [schema] :as explanation} printer]
+  {:body
+   [:group
+    (block "Value:" (malli.virhe/-visit (malli.error/error-value explanation printer) printer) printer)
+    :break :break
+    (block "Errors:" (malli.virhe/-visit (malli.error/humanize explanation) printer) printer)
+    :break :break
+    (block "Schema:" (malli.virhe/-visit schema printer) printer)]})
+
+(defmethod malli.virhe/-format ::malli/invalid-input
+  [_ _ {:keys [args input fn-name]} printer]
+  {:body
+   [:group
+    (block "Invalid function arguments:" (malli.virhe/-visit args printer) printer)
+    :break :break
+    (block "Function Var:" (malli.virhe/-visit fn-name printer) printer)
+    :break :break
+    (block "Input Schema:" (malli.virhe/-visit input printer) printer)
+    :break :break
+    (block "Errors:" (malli.pretty/-explain input args printer) printer)]})
+
+(defmethod malli.virhe/-format ::malli/invalid-output
+  [_ _ {:keys [value args output fn-name]} printer]
+  {:body
+   [:group
+    (block "Invalid function return value:" (malli.virhe/-visit value printer) printer)
+    :break :break
+    (block "Function Var:" (malli.virhe/-visit fn-name printer) printer)
+    :break :break
+    (block "Function arguments:" (malli.virhe/-visit args printer) printer)
+    :break :break
+    (block "Output Schema:" (malli.virhe/-visit output printer) printer)
+    :break :break
+    (block "Errors:" (malli.pretty/-explain output value printer) printer)]})
+
 (defn- printer
   []
-  ;; Reduce the width from 80 to 60. This helps reading exceptions in small emulator screens.
-  (malli.dev.pretty/-printer {:width 60}))
+  ;; Reduce the width from 80 to 60. This helps reading schema errors in small emulator screens.
+  (malli.pretty/-printer {:width 60}))
 
 (defn- registry
   "Application registry containing all available schemas, i.e. keys in the map
@@ -29,30 +75,13 @@
          (common.schema/schemas)
          (shell.schema/schemas)))
 
-;; Custom explainer which is less verbose and compact than :malli.core/explain.
-;; Importantly, sections "More information" and "Schema" are not shown.
-(defmethod malli.dev.virhe/-format :status/malli-explain
-  [_ _ explanation printer]
-  {:body
-   [:group
-    [:group
-     (malli.dev.virhe/-text "Value:" printer)
-     :break
-     [:align 2 (malli.dev.virhe/-visit (malli.error/error-value explanation printer) printer)]]
-    :break
-    :break
-    [:group
-     (malli.dev.virhe/-text "Errors:" printer)
-     :break
-     [:align 2 (malli.dev.virhe/-visit (malli.error/humanize explanation) printer)]]]})
-
 (defn setup!
   "Configure Malli and initializes instrumentation.
 
-  When instrumented vars are defined and hot reload hasn't been triggered, they
-  won't be magically detected and instrumented. Such is the case when you bring
-  up only the REPL for the shadow-cljs :test target, so you will need to
-  manually call `setup!` once after defining a new instrumented var."
+  After evaluating an s-exp in the REPL that changes a function schema you'll
+  need to either save the file where the schema is defined and hot reload or
+  manually call `setup!`, otherwise you won't see any changes. It is safe and
+  even expected you will call `setup!` multiple times in REPLs."
   []
   (malli.registry/set-default-registry! (registry))
 
@@ -62,6 +91,6 @@
 
   ;; We need to use `malli.dev.pretty/thrower` instead of `malli.dev.pretty/report`, otherwise calls
   ;; to memoized functions won't fail on subsequent calls after the first failure.
-  (malli.dev/start! {:report (malli.dev.pretty/thrower (printer))})
+  (malli.dev/start! {:report (malli.pretty/thrower (printer))})
 
   (log/info "Schemas successfully initialized."))

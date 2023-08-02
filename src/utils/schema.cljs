@@ -1,6 +1,6 @@
 (ns utils.schema
   (:require [malli.core :as malli]
-            malli.dev.pretty
+            [malli.dev.pretty :as malli.pretty]
             malli.error
             malli.generator
             malli.util))
@@ -25,23 +25,11 @@
        (malli.util/get-in path)
        (malli.generator/generate options))))
 
-(defn explain
-  "Validates `value` against `?schema` and pretty print errors. Just as
-  malli.explain, returns nil when `value` is valid."
-  [?schema value]
-  (let [explainer  (fn []
-                     (malli.error/with-error-messages
-                      (malli/explain ?schema value)))
-        prettifier (malli.dev.pretty/prettifier
-                    :status/malli-explain
-                    "Validation Error"
-                    explainer
-                    {})]
-    (prettifier)))
-
 (defn match
-  "Returns `value` when it is a valid example of `?schema`, otherwise nil."
+  "Returns `value` when it is a valid example of `?schema`, otherwise nil. This
+  function is particularly useful when combined with when/if-let or in test
+  assertions."
   [?schema value]
-  (if (explain ?schema value)
+  (if (malli.pretty/explain ?schema value)
     nil
     value))
