@@ -15,7 +15,7 @@
 (defmacro ^:private testing-subscription
   [description & body]
   `(cljs.test/testing ~description
-     (test-helpers.unit/restore-app-db (fn [] ~@body))))
+     (restore-app-db (fn [] ~@body))))
 
 (s/fdef deftest-sub
   :args (s/cat :sub-name keyword?
@@ -49,7 +49,7 @@
   `(let [sub-name# ~sub-name]
      (cljs.test/deftest ~(symbol (subscription-name->test-name sub-name))
        (let [~args [sub-name#]]
-         (test-helpers.unit/restore-app-db
+         (restore-app-db
           (fn []
             ~@(clojure.walk/postwalk-replace
                {'cljs.test/testing `testing-subscription
