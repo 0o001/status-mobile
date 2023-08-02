@@ -1,7 +1,6 @@
 (ns status-im2.setup.dev
   (:require ["react-native" :refer (DevSettings LogBox)]
             [react-native.platform :as platform]
-            [status-im2.setup.schema :as schema]
             [utils.re-frame :as rf]))
 
 ;; Ignore all logs, because there are lots of temporary warnings when developing and hot reloading
@@ -34,7 +33,6 @@
 
 (defn setup
   []
-  (schema/setup!)
   (rf/set-mergeable-keys #{:filters/load-filters
                            :pairing/set-installation-metadata
                            :dispatch-n

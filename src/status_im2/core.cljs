@@ -14,13 +14,13 @@
     [status-im2.config :as config]
     [status-im2.setup.dev :as dev]
     [status-im2.setup.global-error :as global-error]
+    [status-im2.setup.schema :as schema]
     [status-im2.common.log :as log]
     [status-im.async-storage.core :as async-storage]
     [native-module.core :as native-module]
     [status-im.notifications.local :as notifications]
     [status-im.utils.universal-links.core :as utils.universal-links]
     status-im.events
-    status-im2.setup.schema
     status-im2.events
     status-im2.navigation.core
     status-im2.subs.root))
@@ -58,5 +58,6 @@
   (reanimated/enable-layout-animations true)
 
   (dev/setup)
+  (schema/setup!)
 
   (re-frame/dispatch-sync [:app-started]))
