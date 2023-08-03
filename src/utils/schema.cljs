@@ -48,7 +48,8 @@
   "Similar to `malli/=>`, but can instrument functional Reagent components and
   anonymous functions.
 
-  When `?output` is not provided, instrument only the input arguments to `f`."
+  Different from `malli/=>`, it is less verbose because there's no need to
+  surround the schema with `[:=> ...]`, also the output schema is optional."
   ([?input f]
    (=> ?input nil f))
   ([?input ?output f]
