@@ -120,17 +120,18 @@
        blur?
        no-icon?])))
 
+(def ?schema
+  [:cat
+   [:map {:closed true}
+    [:size [:enum :small :large]]
+    [:label :string]
+    [:theme {:optional true} :s/theme]
+    [:blur? {:optional true} :boolean]
+    [:no-icon? {:optional true} :boolean]
+    [:status
+     [:maybe
+      [:map
+       [:type [:enum :positive :negative :pending]]]]]]])
+
 (def status-tag
-  (utils.schema/=>
-   [:cat
-    [:map {:closed true}
-     [:size [:enum :small :large]]
-     [:label :string]
-     [:theme {:optional true} :s/theme]
-     [:blur? {:optional true} :boolean]
-     [:no-icon? {:optional true} :boolean]
-     [:status
-      [:maybe
-       [:map
-        [:type [:enum :positive :negative :pending]]]]]]]
-   (quo.theme/with-theme status-tag-internal)))
+  (utils.schema/=> ?schema (quo.theme/with-theme status-tag-internal)))

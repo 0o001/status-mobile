@@ -3,6 +3,8 @@
             [quo2.foundations.colors :as colors]
             [quo2.theme :as theme]
             [react-native.blur :as blur]
+            malli.util
+            [malli.core :as malli]
             [react-native.core :as rn]
             [reagent.core :as reagent]
             [status-im2.common.resources :as resources]
@@ -206,22 +208,91 @@
              :justify-content :center}
             [rn/text "↓"]]]]]))))
 
+(defn option-value->text
+  [value options]
+  (let [option (first (filter #(= value (:value %)) options))]
+    (or (:display option) (:value option))))
+
+(defn customizer-select-v2
+  []
+  (let [open (reagent/atom nil)]
+    (fn [{:keys [label state options] :as args}]
+      (let [state*   (reagent/cursor state [(:key args)])
+            selected (option-value->text @state* options)]
+        [rn/view {:style container}
+         [label-view state label]
+         [rn/view {:style {:flex 0.6}}
+          [rn/modal
+           {:visible              @open
+            :on-request-close     #(reset! open false)
+            :statusBarTranslucent true
+            :transparent          true
+            :animation            :slide}
+           [rn/view {:style (modal-container)}
+            [rn/view {:style (modal-view)}
+             [rn/scroll-view
+              (doall
+               (for [{k :key v :value display :display} options]
+                 ^{:key k}
+                 [rn/touchable-opacity
+                  {:style    (select-option-style (= @state* v))
+                   :on-press (fn []
+                               (reset! open false)
+                               (reset! state* v))}
+                  [rn/text {:color (if (= @state* v) :link :secondary)}
+                   (or display v)]]))]
+             [rn/view
+              {:flex-direction   :row
+               :padding-top      20
+               :margin-top       10
+               :border-top-width 1
+               :border-top-color (colors/theme-colors colors/neutral-100 colors/white)}
+              [rn/touchable-opacity
+               {:style    (select-option-style false)
+                :on-press #(do
+                             (reset! state* nil)
+                             (reset! open false))}
+               [rn/text "Clear"]]
+              [rn/view {:width 16}]
+              [rn/touchable-opacity
+               {:style    (select-option-style false)
+                :on-press #(reset! open false)}
+               [rn/text "Close"]]]]]]
+
+          [rn/touchable-opacity
+           {:style    (select-style)
+            :on-press #(reset! open true)}
+           (if selected
+             [rn/text {:color :link} selected]
+             [rn/text "Select option"])
+           [rn/view
+            {:position        :absolute
+             :right           16
+             :top             0
+             :bottom          0
+             :justify-content :center}
+            [rn/text "↓"]]]]]))))
+
 (defn customizer
-  [state descriptors]
-  [rn/view
-   {:style              {:flex 1}
-    :padding-horizontal 16}
-   (doall
-    (for [desc descriptors
-          :let [descriptor (merge desc {:state state})]]
-      ^{:key (:key desc)}
-      [:<>
-       (case (:type desc)
-         :boolean [customizer-boolean descriptor]
-         :text    [customizer-text descriptor]
-         :number  [customizer-number descriptor]
-         :select  [customizer-select descriptor]
-         nil)]))])
+  ([state descriptors]
+   (customizer state descriptors {}))
+  ([state descriptors opts]
+   [rn/view
+    {:style              {:flex 1}
+     :padding-horizontal 16}
+    (doall
+     (for [desc descriptors
+           :let [descriptor (merge desc {:state state})]]
+       ^{:key (:key desc)}
+       [:<>
+        (case (:type desc)
+          :boolean [customizer-boolean descriptor]
+          :text    [customizer-text descriptor]
+          :number  [customizer-number descriptor]
+          :select  (if (:use-new-selector? opts)
+                     [customizer-select-v2 descriptor]
+                     [customizer-select descriptor])
+          nil)]))]))
 
 (defn customization-color-option
   ([]
@@ -281,3 +352,67 @@
                     :padding-horizontal 16}
                    style)}
     children]])
+
+(defn generate-descriptor
+  [?function-schema]
+  (let [?input      (second (malli/form ?function-schema))
+        schema-keys (malli.util/keys ?input)]
+    (->> schema-keys
+         (map
+          (fn [schema-key]
+            (let [?schema     (malli.util/get ?input schema-key)
+                  schema-type (malli/type ?schema)
+                  label       (string/capitalize (name schema-key))]
+              (cond
+                (= schema-type :enum)
+                (let [children (malli/children ?schema)]
+                  {:label   label
+                   :key     schema-key
+                   :type    :select
+                   :options (mapv (fn [child]
+                                    {:display (string/capitalize (name child))
+                                     :key     child
+                                     :value   child})
+                                  children)})
+
+                (= schema-type :boolean)
+                {:label label
+                 :key   schema-key
+                 :type  :boolean}
+
+                (= schema-type :string)
+                {:label label
+                 :key   schema-key
+                 :type  :text}
+
+                (and (= schema-type ::malli/schema)
+                     (= schema-key :theme))
+                {:label   label
+                 :key     schema-key
+                 :type    :select
+                 :options [{:value :light :key :light :display "Light"}
+                           {:value :dark :key :dark :display "Dark"}]}
+
+                :else
+                (println "Unsupported type" schema-type schema-key)))))
+         (remove nil?))))
+
+(defn screen
+  [header]
+  [rn/view
+   {:style {:background-color (colors/theme-colors colors/white colors/neutral-95)
+            :flex             1}}
+   [rn/flat-list
+    {:style                        {:flex 1}
+     :keyboard-should-persist-taps :always
+     :header                       header
+     :key-fn                       str}]])
+
+(defn component
+  [{:keys [descriptor component state]}]
+  [rn/pressable {:on-press rn/dismiss-keyboard!}
+   [rn/view {:style {:padding-bottom 150}}
+    [rn/view {:style {:flex 1}}
+     [customizer state descriptor {:use-new-selector? true}]]
+    [rn/view {:style {:flex 1 :align-self :center :margin-top 40}}
+     [component @state]]]])
