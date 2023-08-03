@@ -9,7 +9,6 @@
             malli.util
             [status-im2.common.schema :as common.schema]
             [status-im2.contexts.shell.schema :as shell.schema]
-            [taoensso.timbre :as log]
             utils.schema))
 
 ;;;; Formatters
@@ -87,6 +86,6 @@
 
   ;; We need to use `malli.dev.pretty/thrower` instead of `malli.dev.pretty/report`, otherwise calls
   ;; to memoized functions won't fail on subsequent calls after the first failure.
-  (malli.dev/start! {:report (malli.pretty/thrower (utils.schema/printer))})
+  (malli.dev/start! {:report (utils.schema/reporter)})
 
-  (log/info "Schemas successfully initialized."))
+  (println "Schemas initialized."))

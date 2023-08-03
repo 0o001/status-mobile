@@ -1,6 +1,5 @@
 (ns quo2.components.buttons.slide-button.view
   (:require
-    [malli.core :as malli]
     [quo2.components.icon :as icon]
     [quo2.foundations.colors :as colors]
     [quo2.components.buttons.slide-button.style :as style]
@@ -11,7 +10,8 @@
     [reagent.core :as reagent]
     [oops.core :as oops]
     [react-native.reanimated :as reanimated]
-    [quo2.components.buttons.slide-button.constants :as constants]))
+    [quo2.components.buttons.slide-button.constants :as constants]
+    utils.schema))
 
 (defn- f-slider
   [{:keys [disabled?]}]
@@ -75,12 +75,12 @@
              {:color colors/white
               :size  20}]]]]]))))
 
-(defn view
+(defn- view-internal
   [props]
   [:f> f-slider props])
 
-(malli/=> view
-  [:=>
+(def view
+  (utils.schema/=>
    [:cat
     [:map {:closed true}
      [:on-complete {:optional true} fn?]
@@ -89,4 +89,4 @@
      [:track-text :string]
      [:track-icon :s/icon-name]
      [:customization-color {:optional true} :s/color]]]
-   :any])
+   view-internal))

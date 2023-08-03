@@ -34,18 +34,29 @@
     nil
     value))
 
-(defn printer
-  "Custom printer to format schema errors. Optimized for small screens."
+(defn reporter
+  "Custom reporter optimized for small screens."
   []
-  (malli.pretty/-printer
-   {:width        60
-    :print-length 6
-    :print-level  3
-    :print-meta   false}))
+  (malli.pretty/reporter
+   (malli.pretty/-printer
+    {:width        60
+     :print-length 6
+     :print-level  3
+     :print-meta   false})))
 
-(defn instrument
-  [?schema f]
-  (malli/-instrument
-   {:schema ?schema
-    :report (malli.pretty/thrower (printer))}
-   f))
+(defn =>
+  "Similar to `malli/=>`, but can instrument functional Reagent components and
+  anonymous functions.
+
+  When `?output` is not provided, instrument only the input arguments to `f`."
+  ([?input f]
+   (=> ?input nil f))
+  ([?input ?output f]
+   (malli/-instrument {:schema (if ?output
+                                 [:=> ?input ?output]
+                                 [:=> ?input :any])
+                       :scope  (if ?output
+                                 #{:input :output}
+                                 #{:input})
+                       :report (reporter)}
+                      f)))

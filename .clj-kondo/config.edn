@@ -20,7 +20,8 @@
                                               malli.generator  malli.generator
                                               malli.transform  malli.transform
                                               malli.util       malli.util
-                                              taoensso.timbre  log}}
+                                              taoensso.timbre  log
+                                              utils.schema     utils.schema}}
                 :shadowed-var      {:level   :error
                                     ;; We temporarily use :include to define an
                                     ;; allowlist of core Clojure vars. In the

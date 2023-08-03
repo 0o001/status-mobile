@@ -1,5 +1,5 @@
 (ns status-im2.contexts.quo-preview.tags.status-tags
-  (:require [quo2.components.tags.status-tags :as quo2]
+  (:require [quo2.core :as quo]
             [quo2.foundations.colors :as colors]
             [react-native.core :as rn]
             [reagent.core :as reagent]
@@ -54,7 +54,8 @@
            {:show-blur-background? (:blur? @state)
             :blur-view-props       {:blur-type     :dark
                                     :overlay-color colors/neutral-80-opa-80}
-            :style                 {:align-self :center}} [quo2/status-tag props]]]]))))
+            :style                 {:align-self :center}}
+           [quo/status-tag props]]]]))))
 
 (defn preview-status-tags
   []
