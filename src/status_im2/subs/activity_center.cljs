@@ -13,7 +13,7 @@
 (re-frame/reg-sub
  :activity-center/unread-counts-by-type
  :<- [:activity-center]
- (utils.schema/=>
+ (utils.schema/instrument
   [:cat db/?activity-center :any]
   [:map-of {:min 1} :s/notification.type :int]
   (fn [activity-center]

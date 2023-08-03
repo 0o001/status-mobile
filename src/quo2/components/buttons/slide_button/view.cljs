@@ -80,7 +80,7 @@
   [:f> f-slider props])
 
 (def view
-  (utils.schema/=>
+  (utils.schema/instrument
    [:cat
     [:map {:closed true}
      [:on-complete {:optional true} fn?]

@@ -134,4 +134,4 @@
        [:type [:enum :positive :negative :pending]]]]]]])
 
 (def status-tag
-  (utils.schema/=> ?schema (quo.theme/with-theme status-tag-internal)))
+  (utils.schema/instrument ?schema (quo.theme/with-theme status-tag-internal)))

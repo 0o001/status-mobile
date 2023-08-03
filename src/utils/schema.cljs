@@ -44,14 +44,14 @@
      :print-level  3
      :print-meta   false})))
 
-(defn =>
-  "Similar to `malli/=>`, but can instrument functional Reagent components and
-  anonymous functions.
+(defn instrument
+  "Similar to `malli/=>`, but should be used to instrument functional Reagent
+  components and anonymous functions.
 
-  Different from `malli/=>`, it is less verbose because there's no need to
-  surround the schema with `[:=> ...]`, also the output schema is optional."
+  It is less verbose than `malli/=>` because there's no need to surround the
+  schema with `[:=> ...]`, also the output schema is optional."
   ([?input f]
-   (=> ?input nil f))
+   (instrument ?input nil f))
   ([?input ?output f]
    (malli/-instrument {:schema (if ?output
                                  [:=> ?input ?output]
