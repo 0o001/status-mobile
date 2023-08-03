@@ -9,7 +9,8 @@
             malli.util
             [status-im2.common.schema :as common.schema]
             [status-im2.contexts.shell.schema :as shell.schema]
-            [taoensso.timbre :as log]))
+            [taoensso.timbre :as log]
+            utils.schema))
 
 ;;;; Formatters
 ;; These formatters replace the original ones provided by Malli. They are more
@@ -57,11 +58,6 @@
     :break :break
     (block "Errors:" (malli.pretty/-explain output value printer) printer)]})
 
-(defn- printer
-  []
-  ;; Reduce the width from 80 to 60. This helps reading schema errors in small emulator screens.
-  (malli.pretty/-printer {:width 60}))
-
 (defn- registry
   "Application registry containing all available schemas, i.e. keys in the map
   will be globally available.
@@ -91,6 +87,6 @@
 
   ;; We need to use `malli.dev.pretty/thrower` instead of `malli.dev.pretty/report`, otherwise calls
   ;; to memoized functions won't fail on subsequent calls after the first failure.
-  (malli.dev/start! {:report (malli.pretty/thrower (printer))})
+  (malli.dev/start! {:report (malli.pretty/thrower (utils.schema/printer))})
 
   (log/info "Schemas successfully initialized."))

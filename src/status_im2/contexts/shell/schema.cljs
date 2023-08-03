@@ -11,8 +11,29 @@
 
 (def ^:private ?message
   [:map {:closed true}
-   [:command-parameters [:maybe :any]]
-   [:contact-request-state [:maybe ?contact-request-state]]])
+   [:alias :string]
+   [:chat-id :string]
+   [:clock-value :s/unix-timestamp]
+   [:command-parameters :any]
+   [:compressed-key :string]
+   [:contact-request-state [:maybe ?contact-request-state]]
+   [:content :any]
+   [:content-type :int]
+   [:display-name :string]
+   [:emojiHash [:sequential :string]]
+   [:from :string]
+   [:identicon :string]
+   [:link-previews [:sequential :any]]
+   [:message-id :string]
+   [:message-type :int]
+   [:new? {:optional true} :boolean]
+   [:outgoing :boolean]
+   [:outgoing-status :any]
+   [:quoted-message :any]
+   [:replace :string]
+   [:seen :boolean]
+   [:timestamp :s/unix-timestamp]
+   [:whisper-timestamp :s/unix-timestamp]])
 
 (def ^:private ?notification-type
   [:enum
@@ -22,12 +43,17 @@
    notification-types/mention
    notification-types/reply
    notification-types/contact-request
+   notification-types/community-request
    notification-types/admin
+   notification-types/community-kicked
    notification-types/contact-verification])
 
 (def ^:private ?notification
   [:map {:closed true}
    [:name [:string {:min 1}]]
+   [:deleted :boolean]
+   [:membership-status :any]
+   [:community-id :any]
    [:accepted :boolean]
    [:read :boolean]
    [:timestamp :s/unix-timestamp]
@@ -36,6 +62,7 @@
    [:author :s/public-key]
    [:chat-id :s/public-key]
    [:last-message [:maybe ?message]]
+   [:updatedAt :s/unix-timestamp]
    [:message ?message]
    [:reply-message [:maybe :any]]
    [:contact-verification-status

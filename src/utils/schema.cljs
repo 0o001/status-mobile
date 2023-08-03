@@ -33,3 +33,19 @@
   (if (malli.pretty/explain ?schema value)
     nil
     value))
+
+(defn printer
+  "Custom printer to format schema errors. Optimized for small screens."
+  []
+  (malli.pretty/-printer
+   {:width        60
+    :print-length 6
+    :print-level  3
+    :print-meta   false}))
+
+(defn instrument
+  [?schema f]
+  (malli/-instrument
+   {:schema ?schema
+    :report (malli.pretty/thrower (printer))}
+   f))

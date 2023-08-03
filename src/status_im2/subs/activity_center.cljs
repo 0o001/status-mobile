@@ -1,9 +1,7 @@
 (ns status-im2.subs.activity-center
-  (:require [malli.core :as malli]
-            [malli.dev.pretty :as malli.pretty]
-            malli.generator
+  (:require [status-im2.db :as db]
             [re-frame.core :as re-frame]
-            [status-im2.constants :as constants]
+            [utils.schema :as schema]
             [status-im2.contexts.shell.activity-center.notification-types :as types]))
 
 (re-frame/reg-sub
@@ -15,8 +13,11 @@
 (re-frame/reg-sub
  :activity-center/unread-counts-by-type
  :<- [:activity-center]
- (fn [activity-center]
-   (:unread-counts-by-type activity-center)))
+ (schema/instrument
+  [:=> [:cat db/?activity-center :any]
+   [:map-of {:min 1} :s/notification.type :int]]
+  (fn [activity-center]
+    (:unread-counts-by-type activity-center))))
 
 (re-frame/reg-sub
  :activity-center/notification-types-with-unread
@@ -83,39 +84,3 @@
  :<- [:activity-center]
  (fn [activity-center]
    (:contact-requests activity-center)))
-
-(comment
-  (def test-instrumentation
-    (malli/-instrument
-     {:schema [:=> [:cat :s/notification] :s/notification]
-      :report (malli.pretty/reporter)}
-     (fn [notification]
-       (:id notification))))
-
-  (test-instrumentation (malli.generator/generate :s/notification)))
-
-(def ?activity-center-notifications
-  [:map-of
-   :s/notification.type
-   [:map
-    [:all {:optional true}
-     [:map
-      [:cursor :string]
-      [:data [:sequential :s/notification]]]]]])
-
-(comment
-  @(re-frame/subscribe [:activity-center/notifications]))
-
-(comment
-  (re-frame/reg-sub
-   :activity-center/pending-contact-requests
-   :<- [:activity-center/notifications]
-   (malli/-instrument
-    {:schema [:=> [:cat ?activity-center-notifications :any]
-              [:sequential :s/notification]]
-     :report (malli.pretty/reporter)}
-    (fn [notifications]
-      (filter (fn [{:keys [message]}]
-                (= constants/contact-request-message-state-pending
-                   (:contact-request-state message)))
-              (get-in notifications [types/contact-request :unread :data]))))))
