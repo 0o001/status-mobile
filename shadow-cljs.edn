@@ -70,6 +70,9 @@
          :compiler-options {:output-feature-set :es5
                             :closure-defines    {re-frame.trace/trace-enabled? true}
                             :source-map         false
+                            ;; This seems to be necessary while using the REPL,
+                            ;; otherwise sometimes you'll get weird errors when
+                            ;; instrumenting functions.
                             :static-fns         false
                             :infer-externs      true}
          ;; if you want to use a real device, set your local ip

@@ -34,6 +34,10 @@
     nil
     value))
 
+
+;; TODO(ilmotta): We might need to use `malli.dev.pretty/thrower` instead of
+;; `malli.dev.pretty/report`, otherwise calls to memoized functions won't fail
+;; on subsequent calls after the first failure.
 (defn reporter
   "Custom reporter optimized for small screens."
   []

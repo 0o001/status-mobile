@@ -7,7 +7,6 @@
             malli.instrument
             malli.registry
             malli.util
-            ;; [status-im2.db :as db]
             schema.common
             schema.fx
             schema.re-frame
@@ -60,15 +59,6 @@
     :break :break
     (block "Errors:" (malli.pretty/-explain output value printer) printer)]})
 
-;; (defonce ^:private registry
-;;   (atom (merge (malli/default-schemas)
-;;                (malli.util/schemas)
-;;                (common.schema/schemas))))
-
-;; (defn- register!
-;;   [schemas]
-;;   (swap! registry merge schemas))
-
 (defn- make-registry
   "Application registry containing all available schemas, i.e. keys in the map
   will be globally available.
@@ -93,16 +83,10 @@
   even expected you will call `setup!` multiple times in REPLs."
   []
   (malli.registry/set-default-registry! (make-registry))
-  ;; (malli.registry/set-default-registry! (malli.registry/mutable-registry registry))
-
-  ;; (register! {:s/db db/?db})
 
   ;; In theory not necessary, but sometimes in a REPL session the dev needs to
   ;; call unstrument! manually.
   (malli.instrument/unstrument!)
 
-  ;; We need to use `malli.dev.pretty/thrower` instead of `malli.dev.pretty/report`, otherwise calls
-  ;; to memoized functions won't fail on subsequent calls after the first failure.
   (malli.dev/start! {:report (utils.schema/reporter)})
-
   (println "Schemas initialized."))

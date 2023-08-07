@@ -133,6 +133,7 @@
   (mark-as-read {:db {}} "0x1")
 
   (rf/dispatch [:activity-center.notifications/mark-as-read :0x1])
+  ;; => throws error "should be a string"
 )
 
 (rf/defn mark-as-read-success
