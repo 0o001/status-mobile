@@ -1,24 +1,8 @@
 (ns status-im2.db
-  (:require malli.util
-            [react-native.core :as rn]
+  (:require [react-native.core :as rn]
             [status-im.fleet.core :as fleet]
             [status-im.wallet.db :as wallet.db]
             [status-im2.contexts.shell.activity-center.events :as activity-center]))
-
-(def ?activity-center
-  (malli.util/optional-keys
-   [:map {:closed true}
-    [:filter {:required true}
-     [:map
-      [:status [:enum :read :unread]]
-      [:type :int]]]
-    [:loading? :boolean]
-    [:contact-requests :any]
-    [:cursor :string]
-    [:notifications [:sequential :s/notification]]
-    [:seen? :boolean]
-    [:unread-counts-by-type
-     [:map-of {:min 1} :s/notification.type :int]]]))
 
 ;; initial state of app-db
 (def app-db

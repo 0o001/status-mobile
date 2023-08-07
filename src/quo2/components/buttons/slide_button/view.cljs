@@ -87,6 +87,6 @@
      [:disabled? {:optional true} :boolean]
      [:size {:optional true} [:enum :small :large]]
      [:track-text :string]
-     [:track-icon :s/icon-name]
-     [:customization-color {:optional true} :s/color]]]
+     [:track-icon :schema.common/icon-name]
+     [:customization-color {:optional true} :schema.common/color]]]
    view-internal))

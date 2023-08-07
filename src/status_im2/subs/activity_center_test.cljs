@@ -70,16 +70,16 @@
 
 (defn generate-contact-request
   [m]
-  (let [notification (-> (malli.generator/generate :s/notification)
+  (let [notification (-> (malli.generator/generate :schema.shell/notification)
                          (assoc :type types/contact-request)
                          (assoc :contact-verification-status nil)
                          (utils.collection/deep-merge m))]
-    (utils.schema/match :s/notification notification)))
+    (utils.schema/match :schema.shell/notification notification)))
 
 (comment
   (generate-contact-request {})
-  (malli.generator/generate :s/notification)
-  (malli.generator/sample :s/notification {:size 20}))
+  (malli.generator/generate :schema.shell/notification)
+  (malli.generator/sample :schema.shell/notification {:size 20}))
 
 (comment
   ;; `:vector` strictly validates the type of the data structure.

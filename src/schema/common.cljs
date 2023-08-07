@@ -1,6 +1,6 @@
-(ns status-im2.common.schema)
+(ns schema.common)
 
-(def ^:private ?unix-timestamp
+(def ^:private ?timestamp
   [:or zero? pos-int?])
 
 (def ^:private ?public-key
@@ -42,12 +42,11 @@
     :turquoise
     :yellow]])
 
-(defn schemas
-  []
-  {:s/color          ?color
-   :s/icon-name      ?icon-name
-   :s/public-key     ?public-key
-   :s/style          ?style
-   :s/theme          ?theme
-   :s/translation    ?translation
-   :s/unix-timestamp ?unix-timestamp})
+(def schemas
+  {::color       ?color
+   ::icon-name   ?icon-name
+   ::public-key  ?public-key
+   ::style       ?style
+   ::theme       ?theme
+   ::timestamp   ?timestamp
+   ::translation ?translation})

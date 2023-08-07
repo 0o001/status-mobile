@@ -1,11 +1,12 @@
 (ns status-im2.contexts.shell.activity-center.events
-  (:require [quo2.foundations.colors :as colors]
+  (:require [malli.core :as malli]
+            [quo2.foundations.colors :as colors]
             [status-im.data-store.activities :as activities]
             [status-im.data-store.chats :as data-store.chats]
             [status-im2.common.toasts.events :as toasts]
             [status-im2.constants :as constants]
-            [status-im2.contexts.shell.activity-center.notification-types :as types]
             [status-im2.contexts.chat.events :as chat.events]
+            [status-im2.contexts.shell.activity-center.notification-types :as types]
             [taoensso.timbre :as log]
             [utils.collection :as collection]
             [utils.i18n :as i18n]
@@ -118,6 +119,21 @@
                       :on-success [:activity-center.notifications/mark-as-read-success notification]
                       :on-error   [:activity-center/process-notification-failure notification-id
                                    :notification/mark-as-read]}]}))
+
+(malli/=> mark-as-read
+  [:function
+   [:=> [:cat :schema.re-frame/cofx :string]
+    [:maybe :schema.re-frame/effects]]
+   [:=> [:cat :schema.re-frame/cofx :string [:* :any]]
+    [:maybe :schema.re-frame/effects]]])
+
+(comment
+  (mark-as-read {:db {}} :notification-id)
+  (mark-as-read {:db {}})
+  (mark-as-read {:db {}} "0x1")
+
+  (rf/dispatch [:activity-center.notifications/mark-as-read :0x1])
+)
 
 (rf/defn mark-as-read-success
   {:events [:activity-center.notifications/mark-as-read-success]}
@@ -294,11 +310,11 @@
   (and (some? cursor)
        (not= cursor start-or-end-cursor)))
 
-(def ^:const status-unread 2)
-(def ^:const status-all 3)
-(def ^:const read-type-read 1)
-(def ^:const read-type-unread 2)
-(def ^:const read-type-all 3)
+(def status-unread 2)
+(def status-all 3)
+(def read-type-read 1)
+(def read-type-unread 2)
+(def read-type-all 3)
 
 (defn status
   [filter-status]

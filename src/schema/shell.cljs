@@ -1,6 +1,6 @@
-(ns status-im2.contexts.shell.schema
-  (:require [status-im2.constants :as constants]
-            [status-im2.contexts.shell.activity-center.notification-types :as notification-types]))
+(ns schema.shell
+  (:require [status-im2.contexts.shell.activity-center.notification-types :as notification-types]
+            [status-im2.constants :as constants]))
 
 (def ^:private ?contact-request-state
   [:enum
@@ -13,7 +13,7 @@
   [:map {:closed true}
    [:alias :string]
    [:chat-id :string]
-   [:clock-value :s/unix-timestamp]
+   [:clock-value :schema.common/timestamp]
    [:command-parameters :any]
    [:compressed-key :string]
    [:contact-request-state [:maybe ?contact-request-state]]
@@ -32,8 +32,8 @@
    [:quoted-message :any]
    [:replace :string]
    [:seen :boolean]
-   [:timestamp :s/unix-timestamp]
-   [:whisper-timestamp :s/unix-timestamp]])
+   [:timestamp :schema.common/timestamp]
+   [:whisper-timestamp :schema.common/timestamp]])
 
 (def ^:private ?notification-type
   [:enum
@@ -56,13 +56,13 @@
    [:community-id :any]
    [:accepted :boolean]
    [:read :boolean]
-   [:timestamp :s/unix-timestamp]
+   [:timestamp :schema.common/timestamp]
    [:dismissed :boolean]
-   [:id :s/public-key]
-   [:author :s/public-key]
-   [:chat-id :s/public-key]
+   [:id :schema.common/public-key]
+   [:author :schema.common/public-key]
+   [:chat-id :schema.common/public-key]
    [:last-message [:maybe ?message]]
-   [:updatedAt :s/unix-timestamp]
+   [:updatedAt :schema.common/timestamp]
    [:message ?message]
    [:reply-message [:maybe :any]]
    [:contact-verification-status
@@ -78,7 +78,8 @@
    [:type
     ?notification-type]])
 
-(defn schemas
-  []
-  {:s/notification      ?notification
-   :s/notification.type ?notification-type})
+(def schemas
+  {::contact-request-state ?contact-request-state
+   ::message               ?message
+   ::notification          ?notification
+   ::notification-type     ?notification-type})

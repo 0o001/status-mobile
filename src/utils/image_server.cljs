@@ -18,7 +18,7 @@
     :dark  2))
 
 (malli/=> current-theme-index
-  [:=> [:cat :s/theme] :int])
+  [:=> [:cat :schema.common/theme] :int])
 
 (defn correction-level->index
   [level]
@@ -60,7 +60,7 @@
      [:public-key :string]
      [:key-uid :string]
      [:image-name :string]
-     [:theme :s/theme]
+     [:theme :schema.common/theme]
      [:ring? :boolean]]]
    :string])
 

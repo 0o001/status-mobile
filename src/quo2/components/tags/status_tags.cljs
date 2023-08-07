@@ -125,7 +125,7 @@
    [:map {:closed true}
     [:size [:enum :small :large]]
     [:label :string]
-    [:theme {:optional true} :s/theme]
+    [:theme {:optional true} :schema.common/theme]
     [:blur? {:optional true} :boolean]
     [:no-icon? {:optional true} :boolean]
     [:status

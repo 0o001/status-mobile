@@ -160,6 +160,6 @@
    [:cat
     [:map
      [:type {:optional true} [:enum :grey :shell]]
-     [:style {:optional true} :s/style]
+     [:style {:optional true} :schema.common/style]
      [:search? {:optional true} :boolean]]]
    :any])

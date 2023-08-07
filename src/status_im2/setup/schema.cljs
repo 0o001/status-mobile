@@ -7,8 +7,11 @@
             malli.instrument
             malli.registry
             malli.util
-            [status-im2.common.schema :as common.schema]
-            [status-im2.contexts.shell.schema :as shell.schema]
+            ;; [status-im2.db :as db]
+            schema.common
+            schema.fx
+            schema.re-frame
+            schema.shell
             utils.schema))
 
 ;;;; Formatters
@@ -57,18 +60,29 @@
     :break :break
     (block "Errors:" (malli.pretty/-explain output value printer) printer)]})
 
-(defn- registry
+;; (defonce ^:private registry
+;;   (atom (merge (malli/default-schemas)
+;;                (malli.util/schemas)
+;;                (common.schema/schemas))))
+
+;; (defn- register!
+;;   [schemas]
+;;   (swap! registry merge schemas))
+
+(defn- make-registry
   "Application registry containing all available schemas, i.e. keys in the map
   will be globally available.
 
   Since keys in a map are unique, remember to namespace keywords. Prefer to add
   to the global registry only schemas for domain entities (e.g. message, chat,
-  notification, etc) or unambiguously useful schemas, like :s/unix-timestamp."
+  notification, etc) or unambiguously useful schemas, like :schema.common/timestamp."
   []
   (merge (malli/default-schemas)
          (malli.util/schemas)
-         (common.schema/schemas)
-         (shell.schema/schemas)))
+         schema.common/schemas
+         schema.fx/schemas
+         schema.re-frame/schemas
+         schema.shell/schemas))
 
 (defn setup!
   "Configure Malli and initializes instrumentation.
@@ -78,7 +92,10 @@
   manually call `setup!`, otherwise you won't see any changes. It is safe and
   even expected you will call `setup!` multiple times in REPLs."
   []
-  (malli.registry/set-default-registry! (registry))
+  (malli.registry/set-default-registry! (make-registry))
+  ;; (malli.registry/set-default-registry! (malli.registry/mutable-registry registry))
+
+  ;; (register! {:s/db db/?db})
 
   ;; In theory not necessary, but sometimes in a REPL session the dev needs to
   ;; call unstrument! manually.

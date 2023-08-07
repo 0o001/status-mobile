@@ -1,7 +1,8 @@
 (ns status-im2.subs.activity-center
-  (:require [re-frame.core :as re-frame]
+  (:require [malli.core :as malli]
+            malli.util
+            [re-frame.core :as re-frame]
             [status-im2.contexts.shell.activity-center.notification-types :as types]
-            [status-im2.db :as db]
             utils.schema))
 
 (re-frame/reg-sub
@@ -13,9 +14,11 @@
 (re-frame/reg-sub
  :activity-center/unread-counts-by-type
  :<- [:activity-center]
+ (fn [activity-center]
+   (:unread-counts-by-type activity-center))
  (utils.schema/instrument
-  [:cat db/?activity-center :any]
-  [:map-of {:min 1} :s/notification.type :int]
+  [:cat (malli.util/get (malli/deref :schema.re-frame/db) :activity-center) :any]
+  [:map-of {:min 1} :schema.shell/notification-type :int]
   (fn [activity-center]
     (:unread-counts-by-type activity-center))))
 
