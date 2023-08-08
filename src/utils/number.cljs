@@ -19,7 +19,7 @@
        scale)))
 
 (malli/=> naive-round
-  [:=> [:cat :schema.common/color :int] :int])
+  [:=> [:cat :int :int] :int])
 
 (defn parse-int
   "Parses `n` as an integer. Defaults to zero or `default` instead of NaN."
