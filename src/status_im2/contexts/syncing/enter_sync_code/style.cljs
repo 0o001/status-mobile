@@ -10,10 +10,9 @@
 
 (defn text-input-container
   [invalid?]
-  {:padding-top    1
-   :padding-left   12
+  {:padding-left   12
    :padding-right  7
-   :padding-bottom 7
+   :height         40
    :flex           1
    :flex-direction :row
    :border-width   1
