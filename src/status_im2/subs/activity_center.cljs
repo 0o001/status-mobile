@@ -14,8 +14,6 @@
 (re-frame/reg-sub
  :activity-center/unread-counts-by-type
  :<- [:activity-center]
- (fn [activity-center]
-   (:unread-counts-by-type activity-center))
  (utils.schema/instrument
   [:cat (malli.util/get (malli/deref :schema.re-frame/db) :activity-center) :any]
   [:map-of {:min 1} :schema.shell/notification-type :int]

@@ -1,7 +1,38 @@
 (ns schema.re-frame
-  (:require malli.util))
+  (:require [schema.registry :as registry]))
 
-(def ^:private ?activity-center
+(defn ?event
+  []
+  [:catn
+   [:event-id :keyword]
+   [:event-args [:* :any]]])
+
+(defn ?cofx
+  []
+  [:map
+   [:db ::db]])
+
+;;;; Effects
+
+(defn- ?rpc-call
+  []
+  [:vector
+   [:map {:closed true}
+    [:method [:re #"^wakuext_.+$"]]
+    [:params [:vector :any]]
+    [:on-success [:or ::event fn?]]
+    [:on-error [:or ::event fn?]]]])
+
+(defn ?effects
+  []
+  [:map
+   [:db {:optional true} ::db]
+   [:json-rpc/call {:optional true} ::rpc-call]])
+
+;;;; App DB
+
+(defn ?activity-center
+  []
   [:map {:closed true}
    [:filter {:required true}
     [:map
@@ -15,25 +46,14 @@
    [:unread-counts-by-type {:optional true}
     [:map-of {:min 1} :schema.shell/notification-type :int]]])
 
-(def ^:private ?event
-  [:catn
-   [:event-id :keyword]
-   [:event-args [:* :any]]])
+(defn ?db
+  []
+  [:map [:activity-center {:optional true} (?activity-center)]])
 
-(def ^:private ?db
-  [:map [:activity-center {:optional true} ?activity-center]])
-
-(def ^:private ?effects
-  [:map
-   [:db {:optional true} ?db]
-   [:json-rpc/call {:optional true} :schema.fx/rpc-call]])
-
-(def ^:private ?cofx
-  [:map
-   [:db ?db]])
-
-(def schemas
-  {::cofx    ?cofx
-   ::db      ?db
-   ::effects ?effects
-   ::event   ?event})
+(defn register-schemas
+  []
+  (registry/def ::event (?event))
+  (registry/def ::rpc-call (?rpc-call))
+  (registry/def ::db (?db))
+  (registry/def ::cofx (?cofx))
+  (registry/def ::effects (?effects)))

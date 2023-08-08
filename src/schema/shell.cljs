@@ -1,22 +1,25 @@
 (ns schema.shell
-  (:require [status-im2.contexts.shell.activity-center.notification-types :as notification-types]
-            [status-im2.constants :as constants]))
+  (:require [schema.registry :as registry]
+            [status-im2.constants :as constants]
+            [status-im2.contexts.shell.activity-center.notification-types :as notification-types]))
 
-(def ^:private ?contact-request-state
+(defn- ?contact-request-state
+  []
   [:enum
    constants/contact-request-message-state-none
    constants/contact-request-message-state-pending
    constants/contact-request-message-state-accepted
    constants/contact-request-message-state-declined])
 
-(def ^:private ?message
+(defn- ?message
+  []
   [:map {:closed true}
    [:alias :string]
    [:chat-id :string]
    [:clock-value :schema.common/timestamp]
    [:command-parameters :any]
    [:compressed-key :string]
-   [:contact-request-state [:maybe ?contact-request-state]]
+   [:contact-request-state [:maybe ::contact-request-state]]
    [:content :any]
    [:content-type :int]
    [:display-name :string]
@@ -35,7 +38,8 @@
    [:timestamp :schema.common/timestamp]
    [:whisper-timestamp :schema.common/timestamp]])
 
-(def ^:private ?notification-type
+(defn- ?notification-type
+  []
   [:enum
    notification-types/no-type
    notification-types/one-to-one-chat
@@ -48,7 +52,8 @@
    notification-types/community-kicked
    notification-types/contact-verification])
 
-(def ^:private ?notification
+(defn- ?notification
+  []
   [:map {:closed true}
    [:name [:string {:min 1}]]
    [:deleted :boolean]
@@ -61,9 +66,9 @@
    [:id :schema.common/public-key]
    [:author :schema.common/public-key]
    [:chat-id :schema.common/public-key]
-   [:last-message [:maybe ?message]]
+   [:last-message [:maybe ::message]]
    [:updatedAt :schema.common/timestamp]
-   [:message ?message]
+   [:message ::message]
    [:reply-message [:maybe :any]]
    [:contact-verification-status
     [:maybe
@@ -75,11 +80,11 @@
       constants/contact-verification-status-cancelled
       constants/contact-verification-status-trusted
       constants/contact-verification-status-untrustworthy]]]
-   [:type
-    ?notification-type]])
+   [:type ::notification-type]])
 
-(def schemas
-  {::contact-request-state ?contact-request-state
-   ::message               ?message
-   ::notification          ?notification
-   ::notification-type     ?notification-type})
+(defn register-schemas
+  []
+  (registry/def ::contact-request-state (?contact-request-state))
+  (registry/def ::message (?message))
+  (registry/def ::notification-type (?notification-type))
+  (registry/def ::notification (?notification)))

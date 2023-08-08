@@ -8,8 +8,8 @@
             malli.registry
             malli.util
             schema.common
-            schema.fx
             schema.re-frame
+            schema.registry
             schema.shell
             utils.schema))
 
@@ -59,20 +59,17 @@
     :break :break
     (block "Errors:" (malli.pretty/-explain output value printer) printer)]})
 
-(defn- make-registry
-  "Application registry containing all available schemas, i.e. keys in the map
-  will be globally available.
+(defn register-schemas
+  "Register all global schemas in the mutable in `schema.registry/registry`.
 
   Since keys in a map are unique, remember to namespace keywords. Prefer to add
   to the global registry only schemas for domain entities (e.g. message, chat,
   notification, etc) or unambiguously useful schemas, like :schema.common/timestamp."
   []
-  (merge (malli/default-schemas)
-         (malli.util/schemas)
-         schema.common/schemas
-         schema.fx/schemas
-         schema.re-frame/schemas
-         schema.shell/schemas))
+  (schema.registry/merge (malli.util/schemas))
+  (schema.common/register-schemas)
+  (schema.shell/register-schemas)
+  (schema.re-frame/register-schemas))
 
 (defn setup!
   "Configure Malli and initializes instrumentation.
@@ -82,7 +79,8 @@
   manually call `setup!`, otherwise you won't see any changes. It is safe and
   even expected you will call `setup!` multiple times in REPLs."
   []
-  (malli.registry/set-default-registry! (make-registry))
+  (malli.registry/set-default-registry! (malli.registry/mutable-registry schema.registry/registry))
+  (register-schemas)
 
   ;; In theory not necessary, but sometimes in a REPL session the dev needs to
   ;; call unstrument! manually.

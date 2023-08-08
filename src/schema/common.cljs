@@ -1,24 +1,32 @@
-(ns schema.common)
+(ns schema.common
+  (:require [schema.registry :as registry]))
 
-(def ^:private ?timestamp
+(defn- ?timestamp
+  []
   [:or zero? pos-int?])
 
-(def ^:private ?public-key
+(defn- ?public-key
+  []
   [:string {:min 1}])
 
-(def ^:private ?style
+(defn- ?style
+  []
   [:map-of :keyword [:or :int :string :keyword]])
 
-(def ^:private ?theme
+(defn- ?theme
+  []
   [:enum :light :dark])
 
-(def ^:private ?icon-name
+(defn- ?icon-name
+  []
   [:qualified-keyword {:namespace :i}])
 
-(def ^:private ?translation
+(defn- ?translation
+  []
   [:qualified-keyword {:namespace :t}])
 
-(def ^:private ?color
+(defn- ?color
+  []
   [:or
    :string
    [:enum
@@ -42,11 +50,12 @@
     :turquoise
     :yellow]])
 
-(def schemas
-  {::color       ?color
-   ::icon-name   ?icon-name
-   ::public-key  ?public-key
-   ::style       ?style
-   ::theme       ?theme
-   ::timestamp   ?timestamp
-   ::translation ?translation})
+(defn register-schemas
+  []
+  (registry/def ::color (?color))
+  (registry/def ::icon-name (?icon-name))
+  (registry/def ::public-key (?public-key))
+  (registry/def ::style (?style))
+  (registry/def ::theme (?theme))
+  (registry/def ::timestamp (?timestamp))
+  (registry/def ::translation (?translation)))
