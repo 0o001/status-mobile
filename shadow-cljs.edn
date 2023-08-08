@@ -143,8 +143,16 @@
    :output-dir       "target/mocks"
    :compiler-options {:optimizations :simple
                       :source-map    false}}
+
   :component-test {:target           :npm-module
-                   :entries          [quo2.core-spec status-im2.core-spec]
+                   :entries          [;; We need to tell shadow-cljs to compile
+                                      ;; the preloads namespace because it will
+                                      ;; be used directly by Jest in the option
+                                      ;; setupFilesAfterEnv.
+                                      status-im2.setup.schema-preload
+
+                                      quo2.core-spec
+                                      status-im2.core-spec]
                    :ns-regexp        "component-spec$"
                    :output-dir       "component-spec"
                    :compiler-options {:warnings-as-errors false
