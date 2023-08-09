@@ -2275,5 +2275,6 @@
     "retake": "Retake",
     "use-photo": "Use Photo",
     "photo-caps": "PHOTO",
-    "type-pairing-code": "Type or paste pairing code"
+    "type-pairing-code": "Type or paste pairing code",
+    "scan-sync-code-placeholder": "cs2:4FH..."
 }

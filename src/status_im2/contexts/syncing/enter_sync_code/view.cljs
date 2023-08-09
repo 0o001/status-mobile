@@ -31,7 +31,7 @@
            [rn/text-input
             {:style                  (style/text-input)
              :value                  @sync-code-value
-             :placeholder            (i18n/label :t/type-some-chat-key)
+             :placeholder            (i18n/label :t/scan-sync-code-placeholder)
              :on-change-text         (fn [scan-code]
                                        (reset! sync-code-value scan-code)
                                        (reagent/flush))
