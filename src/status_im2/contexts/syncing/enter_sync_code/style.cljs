@@ -12,7 +12,7 @@
   [invalid?]
   {:padding-left   12
    :padding-right  7
-   :height         40
+   :min-height     40
    :flex           1
    :flex-direction :row
    :border-width   1
