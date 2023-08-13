@@ -21,22 +21,26 @@
 
 (defn f-scroll-page-header
   [scroll-height height name page-nav logo sticky-header top-nav title-colum navigate-back?]
-  (let [input-range         (if platform/ios? [-47 10] [0 10])
-        output-range        (if platform/ios? [-208 0] [-208 -45])
-        y                   (reanimated/use-shared-value scroll-height)
-        translate-animation (reanimated/interpolate y
-                                                    input-range
-                                                    output-range
-                                                    {:extrapolateLeft  "clamp"
-                                                     :extrapolateRight "clamp"})
-        opacity-animation   (reanimated/use-shared-value 0)
-        threshold           (if platform/ios? 30 170)]
+  (let [input-range                        (if platform/ios? [-47 10] [0 10])
+        output-range                       (if platform/ios? [-208 0] [-208 -45])
+        y                                  (reanimated/use-shared-value scroll-height)
+        translate-animation                (reanimated/interpolate y
+                                                                   input-range
+                                                                   output-range
+                                                                   {:extrapolateLeft  "clamp"
+                                                                    :extrapolateRight "clamp"})
+        opacity-animation                  (reanimated/use-shared-value 0)
+        threshold                          (if platform/ios? 30 170)
+        opaque?                            (= 1 (reanimated/get-shared-value opacity-animation))
+        {:keys [sheets]}                   (rf/sub [:bottom-sheet])
+        show-blurred-right-section-button? (or (seq sheets)
+                                               opaque?)]
     (rn/use-effect
      #(do
         (reanimated/set-shared-value y scroll-height)
         (reanimated/set-shared-value opacity-animation
                                      (reanimated/with-timing (if (>= scroll-height threshold) 1 0)
-                                                             (clj->js {:duration 300}))))
+                                       (clj->js {:duration 300}))))
      [scroll-height])
     [:<>
      [reanimated/blur-view
@@ -74,13 +78,13 @@
             :mid-section             {:type            :text-with-description
                                       :main-text       nil
                                       :description-img nil}
-            :right-section-buttons   (if (= 1 reanimated/get-shared-value opacity-animation)
-                                       (assoc page-nav :icon-background :blur)
+            :right-section-buttons   (if show-blurred-right-section-button?
+                                       (mapv #(assoc % :icon-background :blur) page-nav)
                                        page-nav)}
            (when navigate-back?
              {:left-section {:icon            :i/close
                              :type            :grey
-                             :icon-background (if (= 1 reanimated/get-shared-value opacity-animation)
+                             :icon-background (if show-blurred-right-section-button?
                                                 :blur
                                                 :photo)
                              :on-press        #(rf/dispatch [:navigate-back])}}))]])
