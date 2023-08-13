@@ -27,7 +27,7 @@
     (reanimated/animate-shared-value-with-delay translate-x
                                                 (- window-width)
                                                 constants/onboarding-modal-animation-duration
-                                                :linear
+                                                ;                                                :linear
                                                 100)))
 
 (defn pop-animation
@@ -35,7 +35,7 @@
   (reanimated/animate-shared-value-with-delay translate-x
                                               0
                                               constants/onboarding-modal-animation-duration
-                                              :linear
+                                              ;                                              :linear
                                               50))
 
 (defn new-account-options

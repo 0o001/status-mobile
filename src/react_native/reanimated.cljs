@@ -11,27 +11,33 @@
                              withRepeat
                              withSequence
                              withDecay
-                             Easing
+                             ;                             Easing
                              Keyframe
                              cancelAnimation
                              SlideInUp
                              SlideOutUp
-                             LinearTransition
-                             enableLayoutAnimations
+                             ;                             LinearTransition
+                             ;                             enableLayoutAnimations
                              runOnJS)]
             [reagent.core :as reagent]
             ["react-native-redash" :refer (withPause)]
             [react-native.flat-list :as rn-flat-list]
             [utils.worklets.core :as worklets.core]))
 
-(def enable-layout-animations enableLayoutAnimations)
+;;commented out to upgrade react-native-reanimated to v3 and react-native to 0.72
+;;TODO: verify if app works properly without enableLayoutAnimations since we are on v3
+;(def enable-layout-animations enableLayoutAnimations)
 
 (def ^:const default-duration 300)
 
 ;; Animations
 (def slide-in-up-animation SlideInUp)
 (def slide-out-up-animation SlideOutUp)
-(def linear-transition LinearTransition)
+;;;; commented out to upgrade react-native-reanimated to v3 and react-native to 0.72
+;;;; TODO: replace this with an updated implementation
+;;;; LinearTransition is deprecated
+;;;; https://github.com/software-mansion/react-native-reanimated/issues/4362#issuecomment-1508682400
+;(def linear-transition LinearTransition)
 
 ;; Animated Components
 (def create-animated-component (comp reagent/adapt-react-class (.-createAnimatedComponent reanimated)))
@@ -71,21 +77,34 @@
 
 (def run-on-js runOnJS)
 
+;;commented out to upgrade react-native-reanimated to v3 and react-native to 0.72
+;;TODO: replace this with an updated implementation
 ;; Easings
-(def bezier (.-bezier ^js Easing))
+;;;;;Easing is deprecated in reanimated v3, use EasingNode instead
+;(def bezier (.-bezier ^js Easing))
 
-(def in-out
-  (.-inOut ^js Easing))
+;;commented out to upgrade react-native-reanimated to v3 and react-native to 0.72
+;;TODO: replace this with an updated implementation
+;;;;;Easing is deprecated in reanimated v3, use EasingNode instead
+;(def in-out
+;  (.-inOut ^js Easing))
+
 
 ;; trying to put default-easing inside easings map causes test to fail
-(defn default-easing [] (in-out (.-quad ^js Easing)))
+;;commented out to upgrade react-native-reanimated to v3 and react-native to 0.72
+;;TODO: replace this with an updated implementation
+;;;;;Easing is deprecated in reanimated v3, use EasingNode instead
+;(defn default-easing [] (in-out (.-quad ^js Easing)))
 
-(def easings
-  {:linear  (bezier 0 0 1 1)
-   :easing1 (bezier 0.25 0.1 0.25 1)
-   :easing2 (bezier 0 0.3 0.6 0.9)
-   :easing3 (bezier 0.3 0.3 0.3 0.9)
-   :easing4 (bezier 0.3 0.3 1 1)})
+;;commented out to upgrade react-native-reanimated to v3 and react-native to 0.72
+;;TODO: replace this with an updated implementation
+;;;;Easing is deprecated in reanimated v3, use EasingNode instead
+;(def easings
+;  {:linear  (bezier 0 0 1 1)
+;   :easing1 (bezier 0.25 0.1 0.25 1)
+;   :easing2 (bezier 0 0.3 0.6 0.9)
+;   :easing3 (bezier 0.3 0.3 0.3 0.9)
+;   :easing4 (bezier 0.3 0.3 1 1)})
 
 ;; Helper functions
 (defn get-shared-value
@@ -115,19 +134,45 @@
 
 ;; Animators
 (defn animate-shared-value-with-timing
-  [anim v duration easing]
+  [anim v duration
+   ;   easing
+  ]
   (set-shared-value anim
                     (with-timing v
-                                 (js-obj "duration" duration
-                                         "easing"   (get easings easing)))))
+                                 (js-obj "duration"
+                                         duration
+                                         ;;;; commented out to upgrade react-native-reanimated to v3 and
+                                         ;;;; react-native to 0.72
+                                         ;;;; TODO: replace this with an updated implementation
+                                         ;;;; Easing is deprecated in reanimated v3, use EasingNode
+                                         ;;;; instead
+                                         ;                                         "easing"   (get
+                                         ;                                         easings easing)
+                                 ))))
 
 (defn animate-shared-value-with-delay
-  [anim v duration easing delay]
+  [anim v duration
+   ;   easing
+   delay]
   (set-shared-value anim
                     (with-delay delay
                                 (with-timing v
-                                             (js-obj "duration" duration
-                                                     "easing"   (get easings easing))))))
+                                             (js-obj
+                                              "duration"
+                                              duration
+                                              ;;;; commented out to upgrade
+                                              ;;;; react-native-reanimated to v3 and react-native
+                                              ;;;; to 0.72
+                                              ;;;; TODO: replace this with an updated
+                                              ;;;; implementation
+                                              ;;;; Easing is deprecated in reanimated v3, use
+                                              ;;;; EasingNode instead
+                                              ;                                                     "easing"
+                                              ;
+                                              ;                                                     (get
+                                              ;                                                     easings
+                                              ;                                                     easing)
+                                             )))))
 
 (defn animate-delay
   ([animation v delay]
@@ -137,28 +182,73 @@
                      (with-delay delay
                                  (with-timing v
                                               (clj->js {:duration duration
-                                                        :easing   (default-easing)}))))))
+                                                        ;;;; commented out to upgrade
+                                                        ;;;; react-native-reanimated to v3 and
+                                                        ;;;; react-native to 0.72
+                                                        ;;;; TODO: replace this with an updated
+                                                        ;;;; implementation
+                                                        ;;;; Easing is deprecated in reanimated v3, use
+                                                        ;;;; EasingNode instead
+                                                        ;                                                        :easing
+                                                        ;
+                                                        ;                                                        (default-easing)
+                                                       }))))))
 
 (defn animate-shared-value-with-repeat
-  [anim v duration easing number-of-repetitions reverse?]
+  [anim v duration
+   ;   easing
+   number-of-repetitions reverse?]
   (set-shared-value anim
                     (with-repeat (with-timing v
-                                              (js-obj "duration" duration
-                                                      "easing"   (get easings easing)))
+                                              (js-obj
+                                               "duration"
+                                               duration
+                                               ;;;; commented out to upgrade
+                                               ;;;; react-native-reanimated to v3 and react-native
+                                               ;;;; to 0.72
+                                               ;;;; TODO: replace this with an updated
+                                               ;;;; implementation
+                                               ;;;; Easing is deprecated in reanimated v3, use
+                                               ;;;; EasingNode instead
+                                               ;                                                      "easing"
+                                               ;
+                                               ;                                                      (get
+                                               ;                                                      easings
+                                               ;                                                      easing)
+                                              ))
                                  number-of-repetitions
                                  reverse?)))
 
 (defn animate-shared-value-with-delay-repeat
-  ([anim v duration easing delay number-of-repetitions]
-   (animate-shared-value-with-delay-repeat anim v duration easing delay number-of-repetitions false))
-  ([anim v duration easing delay number-of-repetitions reverse?]
+  ([anim v duration
+    ;    easing
+    delay number-of-repetitions]
+   (animate-shared-value-with-delay-repeat anim
+                                           v
+                                           duration
+                                           ;                                           easing
+                                           delay
+                                           number-of-repetitions
+                                           false))
+  ([anim v duration
+    ;    easing
+    delay number-of-repetitions reverse?]
    (set-shared-value anim
                      (with-delay delay
                                  (with-repeat
                                   (with-timing v
                                                #js
                                                 {:duration duration
-                                                 :easing   (get easings easing)})
+                                                 ;;;; commented out to upgrade react-native-reanimated to
+                                                 ;;;; v3 and react-native to 0.72
+                                                 ;;;; TODO: replace this with an updated implementation
+                                                 ;;;; Easing is deprecated in reanimated v3, use
+                                                 ;;;; EasingNode instead
+                                                 ;                                                 :easing
+                                                 ;                                                   (get
+                                                 ;                                                 easings
+                                                 ;                                                 easing)
+                                                })
                                   number-of-repetitions
                                   reverse?)))))
 
@@ -183,10 +273,23 @@
    (set-shared-value animation
                      (with-timing value
                                   (clj->js {:duration duration
-                                            :easing   (default-easing)})))))
+                                            ;;;; commented out to upgrade react-native-reanimated to v3
+                                            ;;;; and react-native to 0.72
+                                            ;;;; TODO: replace this with an updated implementation
+                                            ;;;; Easing is deprecated in reanimated v3, use EasingNode
+                                            ;;;; instead
+                                            ;                                            :easing
+                                            ;                                            (default-easing)
+                                           })))))
+
 
 (defn with-timing-duration
   [v duration]
   (with-timing v
                (clj->js {:duration duration
-                         :easing   (in-out (.-quad ^js Easing))})))
+                         ;;;; commented out to upgrade react-native-reanimated to v3 and react-native to
+                         ;;;; 0.72
+                         ;;;; TODO: replace this with an updated implementation
+                         ;;;; Easing is deprecated in reanimated v3, use EasingNode instead
+                         ;                         :easing   (in-out (.-quad ^js Easing))
+                        })))
