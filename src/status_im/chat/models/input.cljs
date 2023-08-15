@@ -143,6 +143,10 @@
   (let [current-chat-id (:current-chat-id db)]
     {:db (assoc-in db [:chat/inputs current-chat-id :metadata :responding-to-message] nil)}))
 
+(defn- prepare-link-preview
+  [preview]
+  (select-keys preview [:url :title :description :thumbnail :type]))
+
 (defn build-text-message
   [{:keys [db]} input-text current-chat-id]
   (when-not (string/blank? input-text)
@@ -158,8 +162,7 @@
        :text          input-text
        :response-to   message-id
        :ens-name      preferred-name
-       :link-previews (map #(select-keys % [:url :title :description :thumbnail])
-                           (get-in db [:chat/link-previews :unfurled]))})))
+       :link-previews (map prepare-link-preview (get-in db [:chat/link-previews :unfurled]))})))
 
 (defn build-image-messages
   [{db :db} chat-id input-text]
@@ -174,8 +177,7 @@
              :image-width   width
              :image-height  height
              :text          input-text
-             :link-previews (map #(select-keys % [:url :title :description :thumbnail])
-                                 (get-in db [:chat/link-previews :unfurled]))
+             :link-previews (map prepare-link-preview (get-in db [:chat/link-previews :unfurled]))
              :response-to   message-id})
           images)))
 
