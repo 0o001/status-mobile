@@ -1,17 +1,22 @@
 (ns status-im.ens.core
   (:refer-clojure :exclude [name])
-  (:require [clojure.string :as string]
-            [re-frame.core :as re-frame]
-            [status-im.bottom-sheet.events :as bottom-sheet]
-            [status-im.ethereum.core :as ethereum]
-            [status-im.ethereum.eip55 :as eip55]
-            [status-im.ethereum.ens :as ens]
-            [status-im.ethereum.stateofus :as stateofus]
-            [status-im.multiaccounts.update.core :as multiaccounts.update]
-            [utils.re-frame :as rf]
-            [utils.datetime :as datetime]
-            [status-im.utils.random :as random]
-            [status-im2.navigation.events :as navigation]))
+  (:require
+    [clojure.set :as set]
+    [clojure.string :as string]
+    [re-frame.core :as re-frame]
+    [status-im.bottom-sheet.events :as bottom-sheet]
+    [status-im.ethereum.core :as ethereum]
+    [status-im.ethereum.eip55 :as eip55]
+    [status-im.ethereum.ens :as ens]
+    [status-im.ethereum.stateofus :as stateofus]
+    [status-im.multiaccounts.update.core :as multiaccounts.update]
+    [utils.re-frame :as rf]
+    [utils.datetime :as datetime]
+    [status-im.utils.random :as random]
+    [status-im2.navigation.events :as navigation]
+    [status-im2.constants :as constants]
+    [status-im2.common.json-rpc.events :as json-rpc]
+    [taoensso.timbre :as log]))
 
 (defn fullname
   [custom-domain? username]
@@ -53,14 +58,13 @@
   [cofx]
   ;; we reset navigation so that navigate back doesn't return
   ;; into the registration flow
-  (navigation/set-stack-root cofx
-                             :profile-stack
-                             [:my-profile
-                              :ens-confirmation]))
+  (rf/merge cofx
+            (navigation/navigate-back-to :my-profile)
+            (navigation/navigate-to :ens-confirmation {})))
 
 (rf/defn update-ens-tx-state-and-redirect
   {:events [:update-ens-tx-state-and-redirect]}
-  [cofx new-state username custom-domain? tx-hash]
+  [{:keys [db] :as cofx} new-state username custom-domain? tx-hash]
   (rf/merge cofx
             (update-ens-tx-state new-state username custom-domain? tx-hash)
             (redirect-to-ens-summary)))
@@ -79,23 +83,54 @@
              (assoc-in [:ens/registration :state] state)
              (assoc-in [:ens/registration :address] address))}))
 
+(rf/defn on-get-ens-usernames
+  {:events [:ens/on-get-ens-usernames]}
+  [{:keys [db]} name-details]
+  (let [name-details (map #(set/rename-keys %
+                                            {:chainId :chain-id
+                                             :removed :removed?})
+                          name-details)]
+    {:db (reduce (fn [db {:keys [username removed?] :as name-detail}]
+                   (if removed?
+                     (update-in db [:ens/names] dissoc username)
+                     (let [old (get-in db [:ens/names username])]
+                       (assoc-in db [:ens/names username] (merge old name-detail)))))
+                 db
+                 name-details)}))
+
+(rf/defn get-ens-usernames
+  {:events [:ens/get-ens-usernames]}
+  [_]
+  {:ens/get-ens-usernames nil})
+
+(re-frame/reg-fx
+ :ens/get-ens-usernames
+ (fn [[_]]
+   (json-rpc/call {:method     "ens_getEnsUsernames"
+                   :params     []
+                   :on-success #(rf/dispatch [:ens/on-get-ens-usernames %])
+                   :on-error   #(log/error "Failed to get ens usernames" %)})))
+
 (rf/defn save-username
   {:events [::save-username]}
   [{:keys [db] :as cofx} custom-domain? username redirectToSummary]
-  (let [name      (fullname custom-domain? username)
-        names     (get-in db [:profile/profile :usernames] [])
-        new-names (conj names name)]
+  (let [name     (fullname custom-domain? username)
+        names    (get-in db [:ens/names] [])
+        chain-id (ethereum/chain-id db)]
     (rf/merge cofx
-              (multiaccounts.update/multiaccount-update
-               :usernames
-               new-names
-               (when redirectToSummary
-                 {:on-success #(re-frame/dispatch [::redirect-to-ens-summary])}))
-              (when (empty? names)
-                (multiaccounts.update/multiaccount-update
-                 :preferred-name
-                 name
-                 {})))))
+              {:json-rpc/call [{:method     "ens_add"
+                                :params     [chain-id name]
+                                :on-success #(rf/dispatch [:ens/get-ens-usernames])
+                                :on-error   #(log/error "Failed to add ens name"
+                                                        {:chain-id chain-id :name name :error %})}]}
+              #(when redirectToSummary
+                 {:dispatch [::redirect-to-ens-summary]})
+              #(when (empty? names)
+                 (multiaccounts.update/multiaccount-update
+                  cofx
+                  :preferred-name
+                  name
+                  {})))))
 
 (rf/defn set-pub-key
   {:events [::set-pub-key]}
@@ -105,15 +140,14 @@
         {:keys [public-key]}                      (:profile/profile db)
         chain-id                                  (ethereum/chain-id db)
         username                                  (fullname custom-domain? username)]
-    (ens/set-pub-key-prepare-tx
-     chain-id
-     address
-     username
-     public-key
-     #(re-frame/dispatch [:signing.ui/sign
-                          {:tx-obj    %
-                           :on-result [::save-username custom-domain? username true]
-                           :on-error  [::on-registration-failure]}]))))
+    {:db            (assoc-in db [:ens/registration :action] constants/ens-action-type-set-pub-key)
+     :json-rpc/call [{:method     "ens_setPubKeyPrepareTx"
+                      :params     [chain-id {:from address} username public-key]
+                      :on-success #(re-frame/dispatch [:signing.ui/sign
+                                                       {:tx-obj    %
+                                                        :on-result [::save-username custom-domain?
+                                                                    username true]
+                                                        :on-error  [::on-registration-failure]}])}]}))
 
 (rf/defn on-input-submitted
   {:events [::input-submitted]}
@@ -171,15 +205,14 @@
         (:ens/registration db)
         {:keys [public-key]} (:profile/profile db)
         chain-id (ethereum/chain-id db)]
-    (ens/register-prepare-tx
-     chain-id
-     address
-     username
-     public-key
-     #(re-frame/dispatch [:signing.ui/sign
-                          {:tx-obj    %
-                           :on-result [:update-ens-tx-state-and-redirect :submitted username false]
-                           :on-error  [::on-registration-failure]}]))))
+    {:db            (assoc-in db [:ens/registration :action] constants/ens-action-type-register)
+     :json-rpc/call [{:method     "ens_registerPrepareTx"
+                      :params     [chain-id {:from address} username public-key]
+                      :on-success #(re-frame/dispatch [:signing.ui/sign
+                                                       {:tx-obj    %
+                                                        :on-result [:update-ens-tx-state-and-redirect
+                                                                    :submitted username false]
+                                                        :on-error  [::on-registration-failure]}])}]}))
 
 (defn- valid-custom-domain?
   [username]
@@ -211,7 +244,7 @@
   {:events [::set-username-candidate]}
   [{:keys [db]} username]
   (let [{:keys [custom-domain?]} (:ens/registration db)
-        usernames                (into #{} (get-in db [:profile/profile :usernames]))
+        usernames                (into #{} (keys (get-in db [:ens/names])))
         state                    (state custom-domain? username usernames)]
     (reset! resolve-last-id (random/id))
     (merge
@@ -244,9 +277,9 @@
             {:db (dissoc db :ens/registration)}
             ;; we reset navigation so that navigate back doesn't return
             ;; into the registration flow
-            (navigation/set-stack-root :profile-stack
-                                       [:my-profile
-                                        :ens-main])))
+            (navigation/navigate-back-to :my-profile)
+            (navigation/navigate-to :ens-main {})
+  ))
 
 (rf/defn switch-domain-type
   {:events [::switch-domain-type]}
@@ -320,17 +353,24 @@
             (set-username-candidate (get-in db [:ens/registration :username] ""))
             (navigation/navigate-to :ens-search {})))
 
+(rf/defn on-remove-username-success
+  {:events [:ens/on-remove-username-success]}
+  [_]
+  {:ens/get-ens-usernames nil})
+
 (rf/defn remove-username
   {:events [::remove-username]}
   [{:keys [db] :as cofx} name]
-  (let [names          (get-in db [:profile/profile :usernames] [])
-        preferred-name (get-in db [:profile/profile :preferred-name])
-        new-names      (remove #(= name %) names)]
+  (let [names                       (get-in db [:ens/names] [])
+        preferred-name              (get-in db [:profile/profile :preferred-name])
+        new-names                   (remove #(= name %) (keys names))
+        {:keys [chain-id username]} (get-in names [name])]
     (rf/merge cofx
-              (multiaccounts.update/multiaccount-update
-               :usernames
-               new-names
-               {})
+              {:json-rpc/call [{:method     "ens_remove"
+                                :params     [chain-id username]
+                                :on-success #(rf/dispatch [:ens/on-remove-username-success])
+                                :on-error   #(log/error "Failed to remove ENS name"
+                                                        {:name name :error %})}]}
               (when (= name preferred-name)
                 (multiaccounts.update/multiaccount-update
                  :preferred-name

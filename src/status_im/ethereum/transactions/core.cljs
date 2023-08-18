@@ -246,19 +246,6 @@
             :all
             :all-preloaded))}))
 
-(rf/defn delete-pending-transactions
-  [{:keys [db]} address transactions]
-  (let [all-transactions
-        (get-in db [:wallet :accounts (eip55/address->checksum address) :transactions])
-        pending-tx-hashes (keep (fn [{:keys [hash]}]
-                                  (let [{:keys [type] :as old-tx}
-                                        (get all-transactions hash)]
-                                    (when (and (get all-transactions hash)
-                                               (= type :pending))
-                                      hash)))
-                                transactions)]
-    {:wallet/delete-pending-transactions pending-tx-hashes}))
-
 (rf/defn handle-new-transfer
   [{:keys [db] :as cofx} transfers {:keys [address limit]}]
   (log/debug "[transfers] new-transfers"
@@ -273,7 +260,7 @@
 
                           (seq transfers)
                           (concat
-                           [(delete-pending-transactions address transfers)]
+                           []
                            (mapv add-transfer transfers))
 
                           (and max-known-block
@@ -301,16 +288,15 @@
                                   (get db :ens/registrations))
         fxs                      (map
                                   (fn [[hash {:keys [username custom-domain?]}]]
-                                    (let [transfer            (first (filter (fn [transfer]
-                                                                               (let [transfer-hash
-                                                                                     (get transfer
-                                                                                          :hash)]
-                                                                                 (= transfer-hash hash)))
-                                                                             transfers))
-                                          type                (get transfer :type)
-                                          transaction-success (get transfer :transfer)]
+                                    (let [transfer (first (filter (fn [transfer]
+                                                                    (let [transfer-hash
+                                                                          (get transfer
+                                                                               :hash)]
+                                                                      (= transfer-hash hash)))
+                                                                  transfers))
+                                          type     (get transfer :type)]
                                       (cond
-                                        (= transaction-success true)
+                                        (= type :outbound)
                                         (rf/merge cofx
                                                   (ens/clear-ens-registration hash)
                                                   (ens/save-username custom-domain? username false))

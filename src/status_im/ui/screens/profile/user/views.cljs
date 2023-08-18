@@ -99,7 +99,9 @@
                :chevron              true
                :icon                 :main-icons/username}
         registrar
-        (assoc :on-press #(re-frame/dispatch [:navigate-to :ens-main registrar])))]
+        (assoc :on-press
+               #(do (re-frame/dispatch [:ens/get-ens-usernames])
+                    (re-frame/dispatch [:navigate-to :ens-main registrar]))))]
      [quo/list-item
       {:title               (i18n/label :t/contacts)
        :icon                :main-icons/in-contacts
