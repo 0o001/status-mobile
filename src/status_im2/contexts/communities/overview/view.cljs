@@ -192,14 +192,7 @@
        [quo/text
         {:size  :paragraph-2
          :style style/review-notice}
-        (i18n/label :t/community-admins-will-review-your-request)])
-
-     (when node-offline?
-       [quo/information-box
-        {:type  :informative
-         :icon  :i/info
-         :style {:margin-top 12}}
-        (i18n/label :t/request-processed-after-node-online)])]))
+        (i18n/label :t/community-admins-will-review-your-request)])]))
 
 (defn status-tag
   [pending? joined]
