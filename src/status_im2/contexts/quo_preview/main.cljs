@@ -126,6 +126,7 @@
     [status-im2.contexts.quo-preview.wallet.summary-info :as summary-info]
     [status-im2.contexts.quo-preview.wallet.token-input :as token-input]
     [status-im2.contexts.quo-preview.wallet.wallet-overview :as wallet-overview]
+    [status-im2.contexts.quo-preview.wallet.transaction-summary :as transaction-summary]
     [utils.re-frame :as rf]))
 
 (def screens-categories
@@ -378,7 +379,9 @@
                        {:name      :token-input
                         :component token-input/preview}
                        {:name      :wallet-overview
-                        :component wallet-overview/preview-wallet-overview}]
+                        :component wallet-overview/preview-wallet-overview}
+                       {:name      :transaction-summary
+                        :component transaction-summary/view}]
    :keycard           [{:name      :keycard-component
                         :component keycard/view}]})
 
