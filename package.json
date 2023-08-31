@@ -16,9 +16,9 @@
   "dependencies": {
     "@babel/preset-typescript": "^7.17.12",
     "@react-native-async-storage/async-storage": "1.19.3",
+    "@react-native-camera-roll/camera-roll": "5.7.2",
     "@react-native-community/audio-toolkit": "git+https://github.com/tbenr/react-native-audio-toolkit.git#refs/tags/v2.0.3-status-v6",
     "@react-native-community/blur": "git+https://github.com/status-im/react-native-blur#refs/tags/v4.3.3-status",
-    "@react-native-camera-roll/camera-roll": "5.7.2",
     "@react-native-community/clipboard": "^1.2.2",
     "@react-native-community/hooks": "^3.0.0",
     "@react-native-community/masked-view": "^0.1.6",
@@ -34,6 +34,7 @@
     "eth-phishing-detect": "^1.2.0",
     "functional-red-black-tree": "^1.0.1",
     "i18n-js": "^3.3.0",
+    "jsc-android": "^250231.0.0",
     "node-libs-react-native": "^1.2.1",
     "qrcode": "^1.4.1",
     "react": "18.2.0",
