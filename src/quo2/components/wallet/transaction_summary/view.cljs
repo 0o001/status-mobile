@@ -60,31 +60,26 @@
     content]])
 
 (defn- view-internal
-  [{:keys [theme first second third fourth second-prefix
-           third-prefix fourth-prefix fifth max-fees
+  [{:keys [theme first-tag second-tag third-tag fourth-tag second-tag-prefix
+           third-tag-prefix fourth-tag-prefix fifth-tag max-fees
            nonce input-data]
     :as   props}]
   [rn/view
    {:style               (style/wallet-activity-container theme)
     :accessibility-label :transaction-summary}
-
    [transaction-header props]
-
    [rn/view {:style style/content}
     [rn/view {:style style/content-line}
-     (when first [prop-tag first])
-     (when second-prefix [prop-text second-prefix theme])
-     (when second [prop-tag second])]
-
+     (when first-tag [prop-tag first-tag])
+     (when second-tag-prefix [prop-text second-tag-prefix theme])
+     (when second-tag [prop-tag second-tag])]
     [rn/view {:style style/content-line}
-     (when third-prefix [prop-text third-prefix theme])
-     (when third [prop-tag third])
-     (when fourth-prefix [prop-text fourth-prefix theme])
-     (when fourth [prop-tag fourth])
-     (when fifth [prop-tag fifth])]]
-
+     (when third-tag-prefix [prop-text third-tag-prefix theme])
+     (when third-tag [prop-tag third-tag])
+     (when fourth-tag-prefix [prop-text fourth-tag-prefix theme])
+     (when fourth-tag [prop-tag fourth-tag])
+     (when fifth-tag [prop-tag fifth-tag])]]
    [rn/view {:style (style/divider theme)}]
-
    [rn/view {:style style/extras-container}
     [extra-info
      {:header  (i18n/label :t/max-fees)
@@ -106,15 +101,15 @@
           - :swap
           - :bridge
              
-        - :first - props for context tag component that will be first on the first line
-        - :second - props for context tag component that will be second on the first line
-        - :third - props for context tag component that will be first on the second line
-        - :fourth - props for context tag component that will be second on the second line
-        - :fifth - props for context tag component that will be second on the second line
+        - :first-tag - props for context tag component that will be first on the first line
+        - :second-tag - props for context tag component that will be second on the first line
+        - :third-tag - props for context tag component that will be first on the second line
+        - :fourth-tag - props for context tag component that will be second on the second line
+        - :fifth-tag - props for context tag component that will be second on the second line
      
-        - :second-prefix - translation keyword to be used with label before second context tag
-        - :third-prefix - translation keyword to be used with label before third context tag
-        - :fourth-prefix - translation keyword to be used with label before fourth context tag
+        - :second-tag-prefix - translation keyword to be used with label before second context tag
+        - :third-tag-prefix - translation keyword to be used with label before third context tag
+        - :fourth-tag-prefix - translation keyword to be used with label before fourth context tag
    
         - :max-fees - string
         - :nonce - digit
