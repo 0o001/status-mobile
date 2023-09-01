@@ -4,5 +4,5 @@
 
 (h/describe "Transaction summary"
   (h/test "default render"
-    (h/render [transaction-summary/view props])
+    (h/render [transaction-summary/view {}])
     (h/is-truthy (h/query-by-label-text :transaction-summary))))
