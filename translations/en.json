@@ -2303,5 +2303,17 @@
     "destroy": "Destroy",
     "mint": "Mint",
     "via": "via",
-    "x-counter": "x{{counter}}"
+    "x-counter": "x{{counter}}",
+    "emoji-search-placeholder": "Search emojis",
+    "emoji-recent": "Recent",
+    "emoji-people": "People",
+    "emoji-nature": "Nature",
+    "emoji-food": "Food",
+    "emoji-activity": "Activity",
+    "emoji-travel": "Travel",
+    "emoji-objects": "Objects",
+    "emoji-symbols": "Symbols",
+    "emoji-flags": "Flags",
+    "emoji-no-results-title": "No emojis match your search",
+    "emoji-no-results-description": "Try something like “rainbow”"
 }
