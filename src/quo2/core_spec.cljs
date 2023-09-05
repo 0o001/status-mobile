@@ -28,6 +28,7 @@
     [quo2.components.graph.wallet-graph.component-spec]
     [quo2.components.inputs.input.component-spec]
     [quo2.components.inputs.profile-input.component-spec]
+    [quo2.components.inputs.address-input.component-spec]
     [quo2.components.inputs.locked-input.component-spec]
     [quo2.components.inputs.recovery-phrase.component-spec]
     [quo2.components.inputs.title-input.component-spec]
