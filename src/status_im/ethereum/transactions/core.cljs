@@ -111,6 +111,7 @@
    `trigger-fn` is a function that returns true if the watch has been triggered
    `on-trigger` is a function that returns the effects to apply when the
    transaction has been triggered"
+  {:events [:transactions/watch-transaction]}
   [{:keys [db]} transaction-id {:keys [trigger-fn on-trigger] :as watch-params}]
   (when (and (fn? trigger-fn)
              (fn? on-trigger))

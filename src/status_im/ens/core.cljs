@@ -112,11 +112,12 @@
                    :on-error   #(log/error "Failed to get ens usernames" %)})))
 
 (rf/defn save-username
-  {:events [::save-username]}
+  {:events [:ens/save-username]}
   [{:keys [db] :as cofx} custom-domain? username redirectToSummary]
   (let [name     (fullname custom-domain? username)
         names    (get-in db [:ens/names] [])
         chain-id (ethereum/chain-id db)]
+    (println "save-username" name)
     (rf/merge cofx
               {:json-rpc/call [{:method     "ens_add"
                                 :params     [chain-id name]
@@ -145,7 +146,7 @@
                       :params     [chain-id {:from address} username public-key]
                       :on-success #(re-frame/dispatch [:signing.ui/sign
                                                        {:tx-obj    %
-                                                        :on-result [::save-username custom-domain?
+                                                        :on-result [:ens/save-username custom-domain?
                                                                     username true]
                                                         :on-error  [::on-registration-failure]}])}]}))
 
