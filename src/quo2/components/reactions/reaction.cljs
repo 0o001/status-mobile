@@ -12,20 +12,20 @@
   [rn/touchable-opacity
    {:on-press            on-press
     :accessibility-label :emoji-reaction-add
-    :style               (style/add-reaction)}
+    :style               (style/add-reaction theme)}
    [icons/icon :i/add-reaction
     {:size  20
      :color (colors/theme-colors colors/neutral-50 colors/white theme)}]])
 
-(defn reaction
+(defn- reaction-internal
   "Add your emoji as a param here"
-  [{:keys [emoji clicks neutral? on-press accessibility-label on-long-press]}]
+  [{:keys [emoji clicks neutral? on-press accessibility-label on-long-press theme]}]
   (let [numeric-value (int clicks)]
     [rn/touchable-opacity
      {:on-press            on-press
       :on-long-press       on-long-press
       :accessibility-label accessibility-label
-      :style               (style/reaction neutral?)}
+      :style               (style/reaction neutral? theme)}
      [rn/image
       {:style               {:width 16 :height 16}
        :accessibility-label :emoji
@@ -38,5 +38,7 @@
        :justify-content :center}
       (when (pos? numeric-value)
         (str " " numeric-value))]]))
+
+(def reaction (theme/with-theme reaction-internal))
 
 (def add-reaction (theme/with-theme add-reaction-internal))

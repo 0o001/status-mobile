@@ -2,7 +2,8 @@
   (:require [status-im2.navigation.view :as views]
             [quo2.foundations.colors :as colors]
             [status-im2.navigation.options :as options]
-            [status-im2.constants :as constants]))
+            [status-im2.constants :as constants]
+            [quo2.theme :as quo.theme]))
 
 (defn get-screen-options
   [screen]
@@ -94,7 +95,7 @@
                     :children [{:component {:name    :shell-stack
                                             :id      :shell-stack
                                             :options (options/default-root
-                                                      (if (colors/dark?) :light :dark))}}]}}}
+                                                      (if (quo.theme/get-theme) :light :dark))}}]}}}
           :profiles
           {:root
            {:stack {:id       :profiles

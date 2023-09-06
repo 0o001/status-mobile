@@ -6,8 +6,7 @@
   [blur? theme]
   (if blur?
     (colors/theme-colors colors/neutral-80-opa-20 colors/white-opa-20 theme)
-    (colors/theme-colors colors/neutral-30 colors/neutral-60 theme))
-)
+    (colors/theme-colors colors/neutral-30 colors/neutral-60 theme)))
 
 (defn get-placeholder-color
   [blur? theme]
@@ -32,7 +31,7 @@
   (colors/alpha (if blur?
                   (colors/theme-colors colors/neutral-100 colors/white theme)
                   (colors/custom-color customization-color
-                                       (if (or (= :dark theme) colors/dark?) 60 50)))
+                                       (if (= :dark theme) 60 50)))
                 (if platform/ios? 1 0.2)))
 
 (def text-input-container {:flex 1})

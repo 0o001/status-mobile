@@ -296,10 +296,6 @@
    (let [theme (or override-theme (theme/get-theme))]
      (if (= theme :light) light dark))))
 
-(defn dark?
-  []
-  (theme/dark?))
-
 ;;;; Networks
 
 (def networks
