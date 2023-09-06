@@ -12,5 +12,5 @@
   []
   (let [state (reagent/atom {:scanned-value ""})]
     (fn []
-     [preview/preview-container {:state state :descriptor descriptor}
-      [quo/address-input @state]])))
+      [preview/preview-container {:state state :descriptor descriptor}
+       [quo/address-input @state]])))

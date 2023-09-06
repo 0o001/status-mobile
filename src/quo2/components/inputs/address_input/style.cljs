@@ -24,8 +24,8 @@
 (def input-text
   (assoc (text/text-style {:size   :paragraph-1
                            :weight :monospace})
-         :flex           1
+         :flex         1
          ;:padding-bottom 2
-         :margin-top     0
-         :margin-right   8
-         :height         24))
+         :margin-top   0
+         :margin-right 8
+         :height       24))

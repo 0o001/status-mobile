@@ -58,29 +58,30 @@
         clipboard (reagent/atom nil)
         focused?  (atom false)]
     (fn [{:keys [scanned-value theme blur? on-change-text on-blur on-focus on-clear on-scan] :as props}]
-      (let [on-change (fn [text]
-                        (if (> (count text) 0)
-                          (reset! status :typing)
-                          (reset! status :active))
-                        (reset! value text)
-                        (when on-change-text
-                          (on-change-text text)))
-            on-paste   (fn []
-                         (when-not (empty? @clipboard)
-                           (on-change @clipboard)
-                           (reset! value @clipboard)))
-            on-clear   (fn []
-                         (reset! value "")
-                         (reset! status (if @focused? :active :default))
-                         (when on-clear
-                           (on-clear)))
-            on-scan    (fn []
-                         (when on-scan
-                           (on-scan)))
+      (let [on-change              (fn [text]
+                                     (if (> (count text) 0)
+                                       (reset! status :typing)
+                                       (reset! status :active))
+                                     (reset! value text)
+                                     (when on-change-text
+                                       (on-change-text text)))
+            on-paste               (fn []
+                                     (when-not (empty? @clipboard)
+                                       (on-change @clipboard)
+                                       (reset! value @clipboard)))
+            on-clear               (fn []
+                                     (reset! value "")
+                                     (reset! status (if @focused? :active :default))
+                                     (when on-clear
+                                       (on-clear)))
+            on-scan                (fn []
+                                     (when on-scan
+                                       (on-scan)))
             placeholder-text-color (get-placeholder-text-color @status theme blur?)]
         (rn/use-effect (fn []
                          (on-change scanned-value)
-                         (reset! value scanned-value)) [scanned-value])
+                         (reset! value scanned-value))
+                       [scanned-value])
         (clipboard/get-string #(reset! clipboard %))
         [rn/view {:style style/container}
          [rn/text-input
@@ -100,14 +101,14 @@
                                        (reset! status :default))
                                      (reset! focused? false)
                                      (when on-blur (on-blur)))
-           :on-change-text        on-change}]
+           :on-change-text         on-change}]
 
          (when (or (= @status :default)
                    (= @status :active))
            [rn/view {:style style/buttons-container}
             [button/button
-             {:type :outline
-              :size 24
+             {:type            :outline
+              :size            24
               :container-style {:margin-right 8}
               :inner-style     {:padding-top 1.5}
               :on-press        on-paste}
