@@ -3,12 +3,15 @@
             [quo.design-system.colors :as colors]
             [quo2.foundations.colors :as quo2.colors]
             [reagent.core :as reagent]
-            [utils.i18n :as i18n]))
+            [utils.i18n :as i18n]
+            [quo2.theme :as quo.theme]
+  ))
 
 (defn search-input
   [{:keys [search-active?]}]
   (let [input-ref      (atom nil)
-        search-active? (or search-active? (reagent/atom nil))]
+        search-active? (or search-active? (reagent/atom nil))
+        theme          (quo.theme/get-theme)]
     (fn [{:keys [on-focus on-change on-blur on-cancel search-filter auto-focus]}]
       [quo/text-input
        {:placeholder         (i18n/label :t/search)
@@ -26,22 +29,26 @@
                               :border-width     1
                               :border-color     (:ui-01 @colors/theme)
                               :background-color (quo2.colors/theme-colors quo2.colors/white
-                                                                          quo2.colors/neutral-90)
+                                                                          quo2.colors/neutral-90
+                                                                          theme)
                               :overflow         :hidden}
         :input-style         {:height           32
                               :padding-top      2
                               :padding-bottom   2
                               :background-color (quo2.colors/theme-colors quo2.colors/white
-                                                                          quo2.colors/neutral-90)}
+                                                                          quo2.colors/neutral-90
+                                                                          theme)}
         :before              {:icon      :main-icons/search2
                               :style     {:padding-horizontal 8
                                           :background-color   (quo2.colors/theme-colors
                                                                quo2.colors/white
-                                                               quo2.colors/neutral-90)}
+                                                               quo2.colors/neutral-90
+                                                               theme)}
                               :on-press  #(some-> ^js @input-ref
                                                   (.focus))
                               :icon-opts {:color (quo2.colors/theme-colors quo2.colors/neutral-50
-                                                                           quo2.colors/white)}}
+                                                                           quo2.colors/white
+                                                                           theme)}}
         :on-focus            #(do
                                 (when on-focus
                                   (on-focus search-filter))

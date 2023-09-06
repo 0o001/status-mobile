@@ -19,7 +19,8 @@
             [status-im2.contexts.chat.composer.constants :as composer.constants]
             [status-im2.contexts.chat.messages.navigation.style :as navigation.style]
             [utils.i18n :as i18n]
-            [utils.re-frame :as rf]))
+            [utils.re-frame :as rf]
+            [quo2.theme :as quo.theme]))
 
 (defonce ^:const threshold-percentage-to-show-floating-scroll-down-button 75)
 (defonce ^:const loading-indicator-extra-spacing 250)
@@ -83,7 +84,7 @@
                                     (if platform/low-device? 700 100)))))
 
 (defn contact-icon
-  [{:keys [ens-verified added?]}]
+  [{:keys [ens-verified added?]} theme]
   (when (or ens-verified added?)
     [rn/view
      {:style {:padding-left 10
@@ -92,12 +93,15 @@
        [quo/icon :i/verified
         {:no-color true
          :size     20
-         :color    (colors/theme-colors colors/success-50 colors/success-60)}]
+         :color    (colors/theme-colors
+                    (colors/custom-color :success 50)
+                    (colors/custom-color :success 60)
+                    theme)}]
        (when added?
          [quo/icon :i/contact
           {:no-color true
            :size     20
-           :color    (colors/theme-colors colors/primary-50 colors/primary-60)}]))]))
+           :color    (colors/theme-colors colors/primary-50 colors/primary-60 theme)}]))]))
 
 (def header-extrapolation-option
   {:extrapolateLeft  "clamp"
@@ -113,17 +117,17 @@
     (when (or loading-messages? (not all-loaded?))
       [rn/view {:padding-top top-spacing}
        [quo/skeleton
-        (if loading-first-page?
-          (- @messages-view-height
-             @messages-view-header-height
-             composer.constants/composer-default-height
-             loading-indicator-extra-spacing)
-          loading-indicator-page-loading-height)]])))
+        {:parent-height (if loading-first-page?
+                          (- @messages-view-height
+                             @messages-view-header-height
+                             composer.constants/composer-default-height
+                             loading-indicator-extra-spacing)
+                          loading-indicator-page-loading-height)}]])))
 
 (defn list-header
-  [insets able-to-send-message?]
+  [insets able-to-send-message? theme]
   [rn/view
-   {:background-color (colors/theme-colors colors/white colors/neutral-95)
+   {:background-color (colors/theme-colors colors/white colors/neutral-95 theme)
     :height           (+ (if able-to-send-message?
                            (+ composer.constants/composer-default-height
                               jump-to.constants/floating-shell-button-height
@@ -183,7 +187,7 @@
                                                       chat-id]))}]}]))
 
 (defn f-list-footer
-  [{:keys [chat scroll-y cover-bg-color on-layout]}]
+  [{:keys [chat scroll-y cover-bg-color on-layout theme]}]
   (let [{:keys [chat-id chat-name emoji chat-type
                 group-chat]} chat
         all-loaded?          (rf/sub [:chats/all-loaded? chat-id])
@@ -204,10 +208,10 @@
                                                      header-extrapolation-option)]
     [rn/view (add-inverted-y-android {:flex 1})
      [rn/view
-      {:style     (style/header-container all-loaded?)
+      {:style     (style/header-container all-loaded? theme)
        :on-layout on-layout}
-      [rn/view {:style (style/header-cover cover-bg-color)}]
-      [reanimated/view {:style (style/header-bottom-part border-animation)}
+      [rn/view {:style (style/header-cover cover-bg-color theme)}]
+      [reanimated/view {:style (style/header-bottom-part border-animation theme)}
        [rn/view {:style style/header-avatar}
         [rn/view {:style {:align-items :flex-start}}
          (when-not group-chat
@@ -223,7 +227,7 @@
            :style           {:margin-top (if group-chat 54 12)}
            :number-of-lines 1}
           display-name
-          [contact-icon contact]]]
+          [contact-icon contact theme]]]
         (when bio
           [quo/text {:style style/bio}
            bio])
@@ -245,11 +249,12 @@
     (reset! messages-view-header-height (+ height y))))
 
 (defn render-fn
-  [{:keys [type value content-type] :as message-data} _ _
+  [{:keys [type value content-type theme] :as message-data} _ _
    {:keys [context keyboard-shown?]}]
   (when (not= content-type constants/content-type-contact-request)
     [rn/view
-     (add-inverted-y-android {:background-color (colors/theme-colors colors/white colors/neutral-95)})
+     (add-inverted-y-android
+      {:background-color (colors/theme-colors colors/white colors/neutral-95 theme)})
      (cond
        (= type :datemark)
        [quo/divider-date value]
@@ -269,7 +274,8 @@
 
 (defn f-messages-list-content
   [{:keys [chat insets scroll-y content-height cover-bg-color keyboard-shown?]}]
-  (let [{window-height :height}   (rn/get-window)
+  (let [theme                     (quo.theme/use-theme-value)
+        {window-height :height}   (rn/get-window)
         {:keys [keyboard-height]} (hooks/use-keyboard)
         context                   (rf/sub [:chats/current-chat-message-list-view-context])
         messages                  (rf/sub [:chats/raw-chat-messages-stream (:chat-id chat)])
@@ -280,16 +286,18 @@
       {:key-fn                            list-key-fn
        :ref                               list-ref
        :header                            [:<>
-                                           [list-header insets (:able-to-send-message? context)]
+                                           [list-header insets (:able-to-send-message? context) theme]
                                            (when (= (:chat-type chat) constants/private-group-chat-type)
                                              [list-group-chat-header chat])]
        :footer                            [list-footer
-                                           {:chat           chat
+                                           {:theme          theme
+                                            :chat           chat
                                             :scroll-y       scroll-y
                                             :cover-bg-color cover-bg-color
                                             :on-layout      footer-on-layout}]
        :data                              messages
-       :render-data                       {:context         context
+       :render-data                       {:theme           theme
+                                           :context         context
                                            :keyboard-shown? keyboard-shown?
                                            :insets          insets}
        :render-fn                         render-fn
@@ -336,10 +344,12 @@
                                                                                       20)
                                                                  (colors/custom-color cover-bg-color
                                                                                       50
-                                                                                      40))
+                                                                                      40)
+                                                                 theme)
                                                                 (colors/theme-colors
                                                                  colors/white
-                                                                 colors/neutral-95))})
+                                                                 colors/neutral-95
+                                                                 theme))})
        ;;TODO(rasom) https://github.com/facebook/react-native/issues/30034
        :inverted                          (when platform/ios? true)
        :on-layout                         (fn [e]

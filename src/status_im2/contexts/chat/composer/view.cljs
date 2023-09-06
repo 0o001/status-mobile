@@ -23,10 +23,10 @@
     [status-im2.contexts.chat.composer.handlers :as handler]
     [status-im2.contexts.chat.composer.gradients.view :as gradients]
     [status-im2.contexts.chat.composer.selection :as selection]
-    [quo2.theme :as theme]))
+    [quo2.theme :as quo.theme]))
 
 (defn sheet-component
-  [{:keys [insets window-height blur-height opacity background-y]} props state]
+  [{:keys [insets window-height blur-height opacity background-y theme]} props state]
   (let [{:keys [chat-screen-loaded?]
          :as   subscriptions}    (utils/init-subs)
         content-height           (reagent/atom (or (:input-content-height
@@ -81,7 +81,7 @@
        {:gesture
         (drag-gesture/drag-gesture props state animations subscriptions dimensions keyboard-shown)}
        [reanimated/view
-        {:style     (style/sheet-container insets state animations)
+        {:style     (style/sheet-container insets state animations theme)
          :on-layout #(handler/layout % state blur-height)}
         [sub-view/bar]
         (when chat-screen-loaded?
@@ -113,13 +113,17 @@
             :on-change-text           #(handler/change-text % props state)
             :on-selection-change      #(handler/selection-change % props state)
             :on-selection             #(selection/on-selection % props state)
-            :keyboard-appearance      (theme/theme-value :light :dark)
+            :keyboard-appearance      (quo.theme/theme-value :light :dark)
             :max-height               max-height
             :max-font-size-multiplier 1
             :multiline                true
             :placeholder              (i18n/label :t/type-something)
             :placeholder-text-color   (colors/theme-colors colors/neutral-30 colors/neutral-50)
-            :style                    (style/input-text props state subscriptions max-height)
+            :style                    (style/input-text props
+                                                        state
+                                                        subscriptions
+                                                        {:max-height max-height
+                                                         :theme      theme})
             :max-length               constants/max-text-size
             :accessibility-label      :chat-message-input}]]
          (when chat-screen-loaded?
@@ -132,11 +136,13 @@
 (defn composer
   [insets]
   (let [window-height (:height (rn/get-window))
+        theme         (quo.theme/use-theme-value)
         opacity       (reanimated/use-shared-value 0)
         background-y  (reanimated/use-shared-value (- window-height))
         blur-height   (reanimated/use-shared-value (+ constants/composer-default-height
                                                       (:bottom insets)))
-        extra-params  {:insets        insets
+        extra-params  {:theme         theme
+                       :insets        insets
                        :window-height window-height
                        :blur-height   blur-height
                        :opacity       opacity
@@ -145,5 +151,8 @@
         state         (utils/init-state)]
     [rn/view (when platform/ios? {:style {:z-index 1}})
      [reanimated/view {:style (style/background opacity background-y window-height)}]
-     [sub-view/blur-view blur-height (:focused? state)]
+     [sub-view/blur-view
+      {:layout-height blur-height
+       :focused?      (:focused? state)
+       :theme         theme}]
      [:f> sheet-component extra-params props state]]))
