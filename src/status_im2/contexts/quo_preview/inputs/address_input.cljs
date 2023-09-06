@@ -4,20 +4,13 @@
             [status-im2.contexts.quo-preview.preview :as preview]))
 
 (def descriptor
-  [{:key :icon :type :boolean}
-   {:key :label :type :text}
-   {:key :value :type :text}])
+  [{:label "Scanned value:"
+    :key   :scanned-value
+    :type  :text}])
 
 (defn view
   []
-  (let [state (reagent/atom {:value ""})]
+  (let [state (reagent/atom {:scanned-value ""})]
     (fn []
-      (let [{:keys [label value icon]} @state]
-        [preview/preview-container {:state state :descriptor descriptor}
-         [quo/address-input
-          {:icon            (when icon :i/gas)
-           :label           label
-           :container-style {:margin-right      20
-                             :margin-horizontal 20
-                             :flex              1}}
-          value]]))))
+     [preview/preview-container {:state state :descriptor descriptor}
+      [quo/address-input @state]])))

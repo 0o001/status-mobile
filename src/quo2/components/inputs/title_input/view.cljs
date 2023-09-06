@@ -30,6 +30,7 @@
                     (reset! value v)
                     (when on-change-text
                       (on-change-text v)))]
+    (println "dsdsa" default-value)
     (fn [{:keys [customization-color disabled?]}]
       [rn/view
        {:style (merge style/container container-style)}
