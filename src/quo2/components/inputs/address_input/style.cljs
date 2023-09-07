@@ -21,10 +21,12 @@
    :height          24
    :width           20})
 
-(def input-text
+(defn input-text
+  [theme]
   (assoc (text/text-style {:size   :paragraph-1
                            :weight :monospace})
          :flex         1
+         :color        (colors/theme-colors colors/neutral-100 colors/white theme)
          ;:padding-bottom 2
          :margin-top   0
          :margin-right 8

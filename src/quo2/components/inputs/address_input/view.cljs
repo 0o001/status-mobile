@@ -2,7 +2,6 @@
   (:require [react-native.core :as rn]
             [react-native.clipboard :as clipboard]
             [quo2.theme :as quo.theme]
-            [quo2.components.markdown.text :as text]
             [quo2.foundations.colors :as colors]
             [quo2.components.icon :as icon]
             [quo2.components.buttons.button.view :as button]
@@ -10,7 +9,9 @@
             [utils.i18n :as i18n]
             [reagent.core :as reagent]))
 
-(defn icon-color
+(def ^:private ens-regex #"^(?=.{5,255}$)([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$")
+
+(defn- icon-color
   [blur? override-theme]
   (if blur?
     (colors/theme-colors colors/neutral-80-opa-30 colors/white-opa-10 override-theme)
@@ -33,10 +34,10 @@
      :size  20}]])
 
 (defn- positive-state-icon
-  [blur? override-theme]
+  [override-theme]
   [rn/view {:style style/clear-icon-container}
    [icon/icon :i/positive-state
-    {:color (icon-color blur? override-theme)
+    {:color (colors/theme-colors colors/success-50 colors/success-60 override-theme)
      :size  20}]])
 
 (defn- get-placeholder-text-color
@@ -57,14 +58,19 @@
         value     (reagent/atom "")
         clipboard (reagent/atom nil)
         focused?  (atom false)]
-    (fn [{:keys [scanned-value theme blur? on-change-text on-blur on-focus on-clear on-scan] :as props}]
+    (fn [{:keys [scanned-value theme blur? on-change-text on-blur on-focus on-clear on-scan on-detect-ens
+                 valid-ens?]}]
       (let [on-change              (fn [text]
-                                     (if (> (count text) 0)
-                                       (reset! status :typing)
-                                       (reset! status :active))
-                                     (reset! value text)
-                                     (when on-change-text
-                                       (on-change-text text)))
+                                     (let [ens? (boolean (re-matches ens-regex text))]
+                                       (if (> (count text) 0)
+                                         (reset! status :typing)
+                                         (reset! status :active))
+                                       (reset! value text)
+                                       (when on-change-text
+                                         (on-change-text text))
+                                       (when (and ens? on-detect-ens)
+                                         (reset! status :loading)
+                                         (on-detect-ens text))))
             on-paste               (fn []
                                      (when-not (empty? @clipboard)
                                        (on-change @clipboard)
@@ -74,22 +80,25 @@
                                      (reset! status (if @focused? :active :default))
                                      (when on-clear
                                        (on-clear)))
-            on-scan                (fn []
-                                     (when on-scan
-                                       (on-scan)))
+            on-scan                #(when on-scan
+                                      (on-scan))
             placeholder-text-color (get-placeholder-text-color @status theme blur?)]
         (rn/use-effect (fn []
-                         (on-change scanned-value)
-                         (reset! value scanned-value))
+                         (when scanned-value
+                           (on-change scanned-value)
+                           (reset! value scanned-value)))
                        [scanned-value])
         (clipboard/get-string #(reset! clipboard %))
         [rn/view {:style style/container}
          [rn/text-input
           {:accessibility-label    :address-text-input
-           :style                  style/input-text
+           :style                  (style/input-text theme)
            :placeholder            (i18n/label :t/name-ens-or-address)
            :placeholder-text-color placeholder-text-color
            :default-value          @value
+           :auto-complete          :none
+           :auto-capitalize        :none
+           :auto-correct           false
            :keyboard-appearance    (quo.theme/theme-value :light :dark theme)
            :on-focus               (fn []
                                      (when (= (count @value) 0)
@@ -125,16 +134,12 @@
              {:on-press       on-clear
               :blur?          blur?
               :override-theme theme}]])
-         (when (= @status :loading)
+         (when (and (= @status :loading) (not valid-ens?))
            [rn/view {:style style/buttons-container}
-            [loading-icon
-             {:blur?          blur?
-              :override-theme theme}]])
-         (when (= @status :success)
+            [loading-icon blur? theme]])
+         (when (and (= @status :loading) valid-ens?)
            [rn/view {:style style/buttons-container}
-            [positive-state-icon
-             {:blur?          blur?
-              :override-theme theme}]])]))))
+            [positive-state-icon theme]])]))))
 
 (defn address-input-internal
   [props]
