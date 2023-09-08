@@ -134,14 +134,19 @@
                               [:transactions/watch-transaction
                                %
                                {:trigger-fn
-                                (fn [{:keys [hash type]}]
+                                (fn [_ {:keys [hash type]}]
                                   (and (= hash %)
-                                       (= type :outbound)))
+                                       (contains? #{:outbound :failed} type)))
                                 :on-trigger
-                                (fn [_]
-                                  {:dispatch [:ens/save-username
-                                              custom-domain? username
-                                              false]})}])]
+                                (fn [{:keys [type]}]
+                                  (case type
+                                    :outbound (do (rf/dispatch [:ens/clear-registration %])
+                                                  (rf/dispatch [:ens/save-username custom-domain?
+                                                                username false]))
+
+                                    :failed   (rf/dispatch [:ens/update-ens-tx-state :failure username
+                                                            custom-domain? %])
+                                    nil))}])]
         (when-not in-progress?
           (cond-> {:db (update db :signing/sign assoc :error nil :in-progress? true)}
             (nil? action)                                 (assoc :signing/send-transaction-fx

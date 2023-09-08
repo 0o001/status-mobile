@@ -201,7 +201,7 @@
         (js-delete response-js "ensUsernameDetails")
         (rf/merge cofx
                   (process-next response-js sync-handler)
-                  (rf/dispatch [:ens/on-get-ens-usernames ens-username-details-clj]))))))
+                  (rf/dispatch [:ens/update-usernames ens-username-details-clj]))))))
 
 (defn group-by-and-update-unviewed-counts
   "group messages by current chat, profile updates, transactions and update unviewed counters in db for not curent chats"

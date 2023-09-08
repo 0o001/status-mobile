@@ -45,7 +45,7 @@
    (ens/expire-at chain-id name cb)))
 
 (rf/defn update-ens-tx-state
-  {:events [:update-ens-tx-state]}
+  {:events [:ens/update-ens-tx-state]}
   [{:keys [db]} new-state username custom-domain? tx-hash]
   {:db (assoc-in db
         [:ens/registrations tx-hash]
@@ -70,7 +70,7 @@
             (redirect-to-ens-summary)))
 
 (rf/defn clear-ens-registration
-  {:events [:clear-ens-registration]}
+  {:events [:ens/clear-registration]}
   [{:keys [db]} tx-hash]
   {:db (update db :ens/registrations dissoc tx-hash)})
 
@@ -83,8 +83,8 @@
              (assoc-in [:ens/registration :state] state)
              (assoc-in [:ens/registration :address] address))}))
 
-(rf/defn on-get-ens-usernames
-  {:events [:ens/on-get-ens-usernames]}
+(rf/defn update-usernames
+  {:events [:ens/update-usernames]}
   [{:keys [db]} name-details]
   (let [name-details (map #(set/rename-keys %
                                             {:chainId :chain-id
@@ -98,34 +98,22 @@
                  db
                  name-details)}))
 
-(rf/defn get-ens-usernames
-  {:events [:ens/get-ens-usernames]}
-  [_]
-  {:ens/get-ens-usernames nil})
-
-(re-frame/reg-fx
- :ens/get-ens-usernames
- (fn [[_]]
-   (json-rpc/call {:method     "ens_getEnsUsernames"
-                   :params     []
-                   :on-success #(rf/dispatch [:ens/on-get-ens-usernames %])
-                   :on-error   #(log/error "Failed to get ens usernames" %)})))
-
 (rf/defn save-username
   {:events [:ens/save-username]}
-  [{:keys [db] :as cofx} custom-domain? username redirectToSummary]
+  [{:keys [db] :as cofx} custom-domain? username redirect-to-summary? connected?]
   (let [name     (fullname custom-domain? username)
         names    (get-in db [:ens/names] [])
         chain-id (ethereum/chain-id db)]
-    (println "save-username" name)
     (rf/merge cofx
-              {:json-rpc/call [{:method     "ens_add"
-                                :params     [chain-id name]
-                                :on-success #(rf/dispatch [:ens/get-ens-usernames])
-                                :on-error   #(log/error "Failed to add ens name"
-                                                        {:chain-id chain-id :name name :error %})}]}
-              #(when redirectToSummary
-                 {:dispatch [::redirect-to-ens-summary]})
+              (cond-> {:dispatch-n [[:ens/update-usernames [{:username name :chain-id chain-id}]]]}
+                connected?           (assoc :json-rpc/call
+                                            [{:method     "ens_add"
+                                              :params     [chain-id name]
+                                              :on-success #()
+                                              :on-error   #(log/error
+                                                            "Failed to add ens name"
+                                                            {:chain-id chain-id :name name :error %})}])
+                redirect-to-summary? (update-in [:dispatch-n] #(conj % [::redirect-to-ens-summary])))
               #(when (empty? names)
                  (multiaccounts.update/multiaccount-update
                   cofx
@@ -160,7 +148,7 @@
       :connected-with-different-key
       (re-frame/dispatch [::set-pub-key])
       :connected
-      (save-username cofx custom-domain? username true)
+      (save-username cofx custom-domain? username true true)
       ;; for other states, we do nothing
       nil)))
 
@@ -354,11 +342,6 @@
             (set-username-candidate (get-in db [:ens/registration :username] ""))
             (navigation/navigate-to :ens-search {})))
 
-(rf/defn on-remove-username-success
-  {:events [:ens/on-remove-username-success]}
-  [_]
-  {:ens/get-ens-usernames nil})
-
 (rf/defn remove-username
   {:events [::remove-username]}
   [{:keys [db] :as cofx} name]
@@ -369,9 +352,11 @@
     (rf/merge cofx
               {:json-rpc/call [{:method     "ens_remove"
                                 :params     [chain-id username]
-                                :on-success #(rf/dispatch [:ens/on-remove-username-success])
+                                :on-success #()
                                 :on-error   #(log/error "Failed to remove ENS name"
-                                                        {:name name :error %})}]}
+                                                        {:name name :error %})}]
+               :dispatch      [:ens/update-usernames
+                               [{:username username :chain-id chain-id :removed? true}]]}
               (when (= name preferred-name)
                 (multiaccounts.update/multiaccount-update
                  :preferred-name

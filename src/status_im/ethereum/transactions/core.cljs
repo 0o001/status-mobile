@@ -278,43 +278,12 @@
                           (conj (tx-history-end-reached checksum)))]
     (apply rf/merge cofx (tx-fetching-ended [checksum]) effects)))
 
-(rf/defn check-ens-transactions
-  [{:keys [db] :as cofx} transfers]
-  (let [set-of-transactions-hash (reduce (fn [acc {:keys [hash]}] (conj acc hash)) #{} transfers)
-        registrations            (filter
-                                  (fn [[hash {:keys [state]}]]
-                                    (and
-                                     (or (= state :dismissed) (= state :submitted))
-                                     (contains? set-of-transactions-hash hash)))
-                                  (get db :ens/registrations))
-        fxs                      (map
-                                  (fn [[hash {:keys [username custom-domain?]}]]
-                                    (let [transfer (first (filter (fn [transfer]
-                                                                    (let [transfer-hash
-                                                                          (get transfer
-                                                                               :hash)]
-                                                                      (= transfer-hash hash)))
-                                                                  transfers))
-                                          type     (get transfer :type)]
-                                      (cond
-                                        (= type :outbound)
-                                        (rf/merge cofx
-                                                  (ens/clear-ens-registration hash)
-                                                  (ens/save-username custom-domain? username false))
-                                        (= type :failed)
-                                        (ens/update-ens-tx-state :failure username custom-domain? hash)
-                                        :else
-                                        nil)))
-                                  registrations)]
-    (apply rf/merge cofx fxs)))
-
 (rf/defn new-transfers
   {:events [::new-transfers]}
   [cofx transfers params]
   (rf/merge cofx
             (handle-new-transfer transfers params)
-            (wallet/stop-fetching-on-empty-tx-history transfers)
-            (check-ens-transactions transfers)))
+            (wallet/stop-fetching-on-empty-tx-history transfers)))
 
 (rf/defn tx-fetching-failed
   {:events [::tx-fetching-failed]}
